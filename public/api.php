@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 /**
  * API HTTP JSON do Emissor NFS-e Goiânia.
  *
@@ -16,6 +14,8 @@ declare(strict_types=1);
  *   GET  /url/{nfse}        URL de impressão (DANFS-e)
  *   GET  /historico?limite=20
  */
+
+declare(strict_types=1);
 
 use EmissorGyn\Config;
 use EmissorGyn\NfseClient;
@@ -53,7 +53,7 @@ try {
     $rota = $partes[0] ?? '';
 
     switch (true) {
-        case $metodo === 'POST' && $rota === 'emitir': {
+        case $metodo === 'POST' && $rota === 'emitir':
             $dados = json_decode((string) file_get_contents('php://input'), true, 32, JSON_THROW_ON_ERROR);
             $client = new NfseClient($config, $factory);
             $serie = $config->get('SERIE_RPS', '1');
@@ -89,39 +89,33 @@ try {
             }
             $storage->registrarErro($registroId, ResponseParser::formatarErros($res['erros']), $retorno);
             json_out(['sucesso' => false, 'rps' => $numeroRps, 'erros' => $res['erros']], 422);
-        }
 
-        case $metodo === 'GET' && $rota === 'notas': {
+        case $metodo === 'GET' && $rota === 'notas':
             $inicio = $_GET['inicio'] ?? json_out(['erro' => 'parâmetro inicio obrigatório'], 400);
             $fim = $_GET['fim'] ?? json_out(['erro' => 'parâmetro fim obrigatório'], 400);
             $client = new NfseClient($config, $factory);
             $xml = $client->consultarServicoPrestado((string) $inicio, (string) $fim, (int) ($_GET['pagina'] ?? 1));
             json_out(['xml' => $xml]);
-        }
 
-        case $metodo === 'GET' && $rota === 'rps' && isset($partes[1]): {
+        case $metodo === 'GET' && $rota === 'rps' && isset($partes[1]):
             $client = new NfseClient($config, $factory);
             $retorno = $client->consultarNfsePorRps((int) $partes[1]);
             $res = ResponseParser::parseGerarNfse($retorno);
             json_out($res + ['xml' => $retorno]);
-        }
 
-        case $metodo === 'POST' && $rota === 'cancelar': {
+        case $metodo === 'POST' && $rota === 'cancelar':
             $body = json_decode((string) file_get_contents('php://input'), true, 8, JSON_THROW_ON_ERROR);
             $nfse = (string) ($body['nfse'] ?? json_out(['erro' => 'campo nfse obrigatório'], 400));
             $client = new NfseClient($config, $factory);
             $retorno = $client->cancelarNfse($nfse, (string) ($body['codigo'] ?? '1'));
             json_out(ResponseParser::parseCancelamento($retorno) + ['xml' => $retorno]);
-        }
 
-        case $metodo === 'GET' && $rota === 'url' && isset($partes[1]): {
+        case $metodo === 'GET' && $rota === 'url' && isset($partes[1]):
             $client = new NfseClient($config, $factory);
             json_out(['retorno' => $client->consultarUrlNfse($partes[1])]);
-        }
 
-        case $metodo === 'GET' && $rota === 'historico': {
+        case $metodo === 'GET' && $rota === 'historico':
             json_out(['emissoes' => $storage->listar((int) ($_GET['limite'] ?? 20))]);
-        }
 
         default:
             json_out(['erro' => 'rota não encontrada'], 404);

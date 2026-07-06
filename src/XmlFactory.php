@@ -84,7 +84,7 @@ final class XmlFactory
         }
 
         $valores = '<ValorServicos>' . $valorServicos . '</ValorServicos>';
-        foreach ([
+        $camposValor = [
             'valor_deducoes' => 'ValorDeducoes',
             'valor_pis' => 'ValorPis',
             'valor_cofins' => 'ValorCofins',
@@ -93,7 +93,8 @@ final class XmlFactory
             'valor_csll' => 'ValorCsll',
             'outras_retencoes' => 'OutrasRetencoes',
             'valor_iss' => 'ValorIss',
-        ] as $k => $tag) {
+        ];
+        foreach ($camposValor as $k => $tag) {
             if (isset($s[$k]) && $s[$k] !== '' && $s[$k] !== null) {
                 $valores .= "<{$tag}>" . self::dec($s[$k]) . "</{$tag}>";
             }
@@ -105,10 +106,11 @@ final class XmlFactory
         } elseif ($issRetido === '1') {
             throw new \InvalidArgumentException('aliquota é obrigatória quando o ISS é retido pelo tomador');
         }
-        foreach ([
+        $camposDesconto = [
             'desconto_incondicionado' => 'DescontoIncondicionado',
             'desconto_condicionado' => 'DescontoCondicionado',
-        ] as $k => $tag) {
+        ];
+        foreach ($camposDesconto as $k => $tag) {
             if (isset($s[$k]) && $s[$k] !== '' && $s[$k] !== null) {
                 $valores .= "<{$tag}>" . self::dec($s[$k]) . "</{$tag}>";
             }
