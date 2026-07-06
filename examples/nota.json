@@ -1,0 +1,39 @@
+{
+  "competencia": "2026-07-06",
+
+  "servico": {
+    "valor_servicos": "3500.00",
+    "iss_retido": 2,
+    "item_lista_servico": "7.02",
+    "codigo_cnae": "4321500",
+    "codigo_tributacao_municipio": "",
+    "discriminacao": "Instalacao de sistema fotovoltaico 5kWp - projeto, homologacao junto a concessionaria e instalacao completa",
+    "exigibilidade_iss": 1,
+
+    "aliquota": "",
+    "valor_deducoes": "",
+    "valor_pis": "",
+    "valor_cofins": "",
+    "valor_inss": "",
+    "valor_ir": "",
+    "valor_csll": "",
+    "desconto_incondicionado": "",
+    "desconto_condicionado": ""
+  },
+
+  "tomador": {
+    "cpf_cnpj": "11222333000181",
+    "razao_social": "Cliente Exemplo LTDA",
+    "endereco": {
+      "logradouro": "Avenida T-63",
+      "numero": "1000",
+      "complemento": "Sala 101",
+      "bairro": "Setor Bueno",
+      "codigo_municipio": "5208707",
+      "uf": "GO",
+      "cep": "74230100"
+    },
+    "telefone": "62999990000",
+    "email": "financeiro@clienteexemplo.com.br"
+  }
+}

@@ -1,0 +1,7 @@
+/vendor/
+/.env
+/storage/*.sqlite*
+/storage/xml/*
+!storage/xml/.gitkeep
+*.pfx
+*.p12

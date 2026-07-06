@@ -1,0 +1,29 @@
+{
+    "name": "pedro/emissor-nfse-goiania",
+    "description": "Emissor de NFS-e ABRASF 2.04 para o SGISS da Prefeitura de Goiânia (provedor ISSNet), construído sobre componentes NFePHP",
+    "type": "project",
+    "license": "MIT",
+    "require": {
+        "php": ">=8.1",
+        "ext-curl": "*",
+        "ext-dom": "*",
+        "ext-json": "*",
+        "ext-libxml": "*",
+        "ext-openssl": "*",
+        "ext-pdo": "*",
+        "ext-pdo_sqlite": "*",
+        "ext-simplexml": "*",
+        "nfephp-org/sped-common": "^5.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "EmissorGyn\\": "src/"
+        }
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "sort-packages": true
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}
