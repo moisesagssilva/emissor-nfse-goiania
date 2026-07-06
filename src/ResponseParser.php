@@ -84,6 +84,23 @@ final class ResponseParser
         return implode(PHP_EOL, $linhas);
     }
 
+    /** Extrai a URL do DANFS-e do retorno do método ConsultarUrlNfse. */
+    public static function parseUrlNfse(string $xml): ?string
+    {
+        try {
+            $dom = self::load($xml);
+        } catch (\RuntimeException) {
+            return null;
+        }
+        $el = $dom->getElementsByTagName('Url')->item(0)
+            ?? $dom->getElementsByTagName('ConsultarUrlNfseResult')->item(0);
+        if ($el === null) {
+            return null;
+        }
+        $url = trim($el->textContent);
+        return $url !== '' ? $url : null;
+    }
+
     public static function load(string $xml): \DOMDocument
     {
         $dom = new \DOMDocument();

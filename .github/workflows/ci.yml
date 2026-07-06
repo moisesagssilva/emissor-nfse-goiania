@@ -28,3 +28,6 @@ jobs:
 
       - name: Lint (PSR-12)
         run: vendor/bin/phpcs --standard=PSR12 -n src/ public/
+
+      - name: Tests
+        run: vendor/bin/phpunit --colors=always
