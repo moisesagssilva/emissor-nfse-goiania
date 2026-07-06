@@ -22,3 +22,9 @@ jobs:
 
       - name: Install dependencies
         run: composer install --prefer-dist --no-progress --no-interaction
+
+      - name: Syntax check
+        run: find src/ public/ bin/ -name "*.php" | xargs php -l
+
+      - name: Lint (PSR-12)
+        run: vendor/bin/phpcs --standard=PSR12 src/ public/
