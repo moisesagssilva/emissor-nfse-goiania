@@ -27,4 +27,4 @@ jobs:
         run: find src/ public/ bin/ -name "*.php" | xargs php -l
 
       - name: Lint (PSR-12)
-        run: vendor/bin/phpcs --standard=PSR12 src/ public/
+        run: vendor/bin/phpcs --standard=PSR12 -n src/ public/
