@@ -197,7 +197,7 @@ Ações de workflow chegam via POST no mesmo `?p=orcamentos/ver&id=X` com campo 
 | `logout()` | Destroi sessão |
 | `guard()` | Redireciona para login se não autenticado |
 | `usuarioAtual()` | Retorna array com id/nome do usuário logado |
-| `registrar(nome, email, senha)` | Primeiro usuário: livre. Demais: exige sessão ativa |
+| `registrar(nome, email, senha)` | Se `usuarios` está vazio: livre. Caso contrário: exige sessão ativa (link de cadastro oculto se não logado) |
 | `registrarTentativa(ip)` | Incrementa contador; bloqueia IP por 15 min após 5 falhas |
 
 **Configuração da sessão** (aplicada antes de `session_start()`):
@@ -236,7 +236,7 @@ ini_set('session.use_strict_mode', '1');
 
 ### DANFS-e
 
-Botão "DANFS-e Oficial" chama `NfseClient::consultarUrlNfse()`, extrai a URL do XML de retorno e abre em nova aba. Não há geração de PDF local — o DANFS-e do portal ISSNet é o documento oficial válido juridicamente.
+Botão "DANFS-e Oficial" chama `NfseClient::consultarUrlNfse()`, passa o XML de retorno para `ResponseParser::parseUrlNfse(string $xml): string` (novo método, mesmo padrão dos existentes) e abre a URL em nova aba. Não há geração de PDF local — o DANFS-e do portal ISSNet é o documento oficial válido juridicamente.
 
 ---
 
