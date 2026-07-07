@@ -17,7 +17,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: "8.2"
-          extensions: curl, dom, json, libxml, openssl, pdo, pdo_sqlite, simplexml
+          extensions: curl, dom, gd, json, libxml, mbstring, openssl, pdo, pdo_sqlite, simplexml, soap, zlib
           coverage: none
 
       - name: Install dependencies

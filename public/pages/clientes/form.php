@@ -20,6 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'complemento'      => trim($_POST['complemento'] ?? ''),
             'bairro'           => trim($_POST['bairro'] ?? ''),
             'codigo_municipio' => trim($_POST['codigo_municipio'] ?? ''),
+            'municipio'        => trim($_POST['municipio'] ?? ''),
             'uf'               => strtoupper(trim($_POST['uf'] ?? '')),
             'cep'              => preg_replace('/\D/', '', $_POST['cep'] ?? ''),
         ];
@@ -108,6 +109,12 @@ $v = $cliente ?? [];
         <label class="form-label">Bairro</label>
         <input type="text" name="bairro" class="form-control"
                value="<?= h((string) ($v['bairro'] ?? '')) ?>">
+    </div>
+    <div class="col-md-4">
+        <label class="form-label">Município</label>
+        <input type="text" name="municipio" class="form-control"
+               value="<?= h((string) ($v['municipio'] ?? '')) ?>"
+               placeholder="Goiânia">
     </div>
     <div class="col-md-4">
         <label class="form-label">Município (código IBGE)</label>
