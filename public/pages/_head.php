@@ -19,6 +19,7 @@
             <a class="nav-link" href="?p=clientes">Clientes</a>
             <a class="nav-link" href="?p=servicos">Serviços</a>
             <a class="nav-link" href="?p=orcamentos">Orçamentos</a>
+            <a class="nav-link" href="?p=pedidos">Pedidos NF-e</a>
             <a class="nav-link text-warning" href="?p=login&amp;acao=logout">
                 Sair (<?= h($usuario['nome']) ?>)
             </a>

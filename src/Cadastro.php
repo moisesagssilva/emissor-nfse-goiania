@@ -129,6 +129,10 @@ final class Cadastro
             CREATE INDEX IF NOT EXISTS idx_orcamentos_cliente ON orcamentos (cliente_id);
             CREATE INDEX IF NOT EXISTS idx_orcamentos_status  ON orcamentos (status);
         SQL);
+        try {
+            $this->pdo->exec('ALTER TABLE clientes ADD COLUMN municipio TEXT');
+        } catch (\PDOException) {
+        }
     }
 
     // ─── Usuários ────────────────────────────────────────────────────────────
@@ -226,8 +230,8 @@ final class Cadastro
         $stmt = $this->pdo->prepare(
             'INSERT INTO clientes
                 (razao_social, cpf_cnpj, email, telefone, logradouro, numero,
-                 complemento, bairro, codigo_municipio, uf, cep)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+                 complemento, bairro, codigo_municipio, municipio, uf, cep)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
         );
         $stmt->execute([
             $dados['razao_social'],
@@ -239,6 +243,7 @@ final class Cadastro
             $dados['complemento'] ?? null,
             $dados['bairro'] ?? null,
             $dados['codigo_municipio'] ?? null,
+            $dados['municipio'] ?? null,
             $dados['uf'] ?? null,
             $dados['cep'] ?? null,
         ]);
@@ -252,7 +257,7 @@ final class Cadastro
             'UPDATE clientes SET
                 razao_social = ?, cpf_cnpj = ?, email = ?, telefone = ?,
                 logradouro = ?, numero = ?, complemento = ?, bairro = ?,
-                codigo_municipio = ?, uf = ?, cep = ?
+                codigo_municipio = ?, municipio = ?, uf = ?, cep = ?
              WHERE id = ?'
         )->execute([
             $dados['razao_social'],
@@ -264,6 +269,7 @@ final class Cadastro
             $dados['complemento'] ?? null,
             $dados['bairro'] ?? null,
             $dados['codigo_municipio'] ?? null,
+            $dados['municipio'] ?? null,
             $dados['uf'] ?? null,
             $dados['cep'] ?? null,
             $id,
