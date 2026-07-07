@@ -6,7 +6,11 @@ declare(strict_types=1);
 if (($_GET['acao'] ?? '') === 'danfe') {
     $danfeId     = isset($_GET['id']) ? (int) $_GET['id'] : 0;
     $danfePedido = $danfeId > 0 ? $nfeStorage->buscarPedido($danfeId) : null;
-    if ($danfePedido !== null && $danfePedido['nfe_xml_autorizado'] !== null) {
+    if (
+        $danfePedido !== null
+        && $danfePedido['status'] === 'emitido'
+        && $danfePedido['nfe_xml_autorizado'] !== null
+    ) {
         $xml   = (string) $danfePedido['nfe_xml_autorizado'];
         $danfe = new NFePHP\DA\NFe\Danfe($xml);
         $danfe->monta();
@@ -17,7 +21,7 @@ if (($_GET['acao'] ?? '') === 'danfe') {
         echo $danfe->render();
         exit;
     }
-    // XML not available — fall through to normal page display
+    exit('XML autorizado não encontrado.');
 }
 
 // ── Load order ────────────────────────────────────────────────────────────────
@@ -74,7 +78,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     'tipo' => 'success',
                     'msg'  => 'NF-e autorizada! Chave: ' . $resultado['chave'],
                 ];
-            } catch (\RuntimeException $e) {
+            } catch (\Throwable $e) {
                 $nfeStorage->definirUltimoNfe($serie, $nNF - 1);
                 $flash = ['tipo' => 'danger', 'msg' => 'Erro ao emitir: ' . $e->getMessage()];
             }
@@ -101,8 +105,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         ''
                     );
                     $nfeStorage->cancelarPedido($id);
-                    header('Location: ?p=pedidos/ver&id=' . $id);
-                    exit;
+                    $pedido = $nfeStorage->buscarPedido($id);
+                    $flash  = [
+                        'tipo' => 'warning',
+                        'msg'  => 'NF-e cancelada na SEFAZ. Protocolo: ' . $protocolo,
+                    ];
                 } catch (\Throwable $e) {
                     $flash = [
                         'tipo' => 'danger',
