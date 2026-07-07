@@ -273,13 +273,15 @@ final class CadastroTest extends TestCase
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 razao_social TEXT NOT NULL,
                 cpf_cnpj TEXT NOT NULL,
-                uf TEXT,
-                cep TEXT,
                 logradouro TEXT,
                 numero TEXT,
+                complemento TEXT,
                 bairro TEXT,
                 codigo_municipio TEXT,
-                municipio TEXT,
+                uf TEXT,
+                cep TEXT,
+                email TEXT,
+                telefone TEXT,
                 ativo INTEGER NOT NULL DEFAULT 1
             )
         SQL);
@@ -319,9 +321,23 @@ final class CadastroTest extends TestCase
     {
         $storage = new \EmissorGyn\NfeStorage(':memory:');
         $pdo = $storage->getPdoForTest();
-        $pdo->exec(
-            "CREATE TABLE IF NOT EXISTS clientes (id INTEGER PRIMARY KEY AUTOINCREMENT, razao_social TEXT NOT NULL, cpf_cnpj TEXT NOT NULL)"
-        );
+        $pdo->exec(<<<'SQL'
+            CREATE TABLE IF NOT EXISTS clientes (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                razao_social TEXT NOT NULL,
+                cpf_cnpj TEXT NOT NULL,
+                logradouro TEXT,
+                numero TEXT,
+                complemento TEXT,
+                bairro TEXT,
+                codigo_municipio TEXT,
+                uf TEXT,
+                cep TEXT,
+                email TEXT,
+                telefone TEXT,
+                ativo INTEGER NOT NULL DEFAULT 1
+            )
+        SQL);
         $pdo->exec("INSERT INTO clientes (razao_social, cpf_cnpj) VALUES ('C','11222333000181')");
         $clienteId = (int) $pdo->lastInsertId();
 
@@ -364,9 +380,23 @@ final class CadastroTest extends TestCase
     {
         $storage = new \EmissorGyn\NfeStorage(':memory:');
         $pdo = $storage->getPdoForTest();
-        $pdo->exec(
-            "CREATE TABLE IF NOT EXISTS clientes (id INTEGER PRIMARY KEY AUTOINCREMENT, razao_social TEXT NOT NULL, cpf_cnpj TEXT NOT NULL)"
-        );
+        $pdo->exec(<<<'SQL'
+            CREATE TABLE IF NOT EXISTS clientes (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                razao_social TEXT NOT NULL,
+                cpf_cnpj TEXT NOT NULL,
+                logradouro TEXT,
+                numero TEXT,
+                complemento TEXT,
+                bairro TEXT,
+                codigo_municipio TEXT,
+                uf TEXT,
+                cep TEXT,
+                email TEXT,
+                telefone TEXT,
+                ativo INTEGER NOT NULL DEFAULT 1
+            )
+        SQL);
         $pdo->exec("INSERT INTO clientes (razao_social, cpf_cnpj) VALUES ('E','11222333000181')");
         $clienteId = (int) $pdo->lastInsertId();
         $pedidoId = $storage->inserirPedido([

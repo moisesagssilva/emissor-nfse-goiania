@@ -162,7 +162,10 @@ final class NfeStorage
     public function buscarPedido(int $id): ?array
     {
         $stmt = $this->pdo->prepare(
-            'SELECT p.*, c.razao_social, c.cpf_cnpj
+            'SELECT p.*, c.razao_social, c.cpf_cnpj,
+                    c.logradouro, c.numero AS cliente_numero, c.complemento,
+                    c.bairro, c.codigo_municipio, c.uf, c.cep,
+                    c.email AS cliente_email, c.telefone
                FROM pedidos p
                JOIN clientes c ON c.id = p.cliente_id
               WHERE p.id = ?'
@@ -247,7 +250,7 @@ final class NfeStorage
             "UPDATE pedidos
                 SET status = 'cancelado',
                     cancelado_em = datetime('now','localtime')
-              WHERE id = ?"
+              WHERE id = ? AND status IN ('rascunho', 'aprovado', 'emitido')"
         )->execute([$id]);
     }
 
