@@ -164,7 +164,7 @@ final class NfeStorage
         $stmt = $this->pdo->prepare(
             'SELECT p.*, c.razao_social, c.cpf_cnpj,
                     c.logradouro, c.numero AS cliente_numero, c.complemento,
-                    c.bairro, c.codigo_municipio, c.uf, c.cep,
+                    c.bairro, c.municipio, c.codigo_municipio, c.uf, c.cep,
                     c.email AS cliente_email, c.telefone
                FROM pedidos p
                JOIN clientes c ON c.id = p.cliente_id

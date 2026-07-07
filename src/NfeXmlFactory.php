@@ -134,23 +134,23 @@ final class NfeXmlFactory
             $std->indTot   = 1;
             $make->tagprod($std);
 
-            // ICMS Simples Nacional CSOSN 400
+            // ICMS Simples Nacional
             $std        = new \stdClass();
             $std->item  = $n;
             $std->orig  = 0;
-            $std->CSOSN = '400';
+            $std->CSOSN = (string) ($item['csosn'] ?? '400');
             $make->tagICMSSN($std);
 
-            // PIS CST 07 (não tributado)
+            // PIS
             $std       = new \stdClass();
             $std->item = $n;
-            $std->CST  = '07';
+            $std->CST  = (string) ($item['pis_cst'] ?? '07');
             $make->tagPIS($std);
 
-            // COFINS CST 07
+            // COFINS
             $std       = new \stdClass();
             $std->item = $n;
-            $std->CST  = '07';
+            $std->CST  = (string) ($item['cofins_cst'] ?? '07');
             $make->tagCOFINS($std);
 
             if (!empty($item['informacoes_adicionais_item'])) {

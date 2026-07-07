@@ -79,6 +79,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     'msg'  => 'NF-e autorizada! Chave: ' . $resultado['chave'],
                 ];
             } catch (\Throwable $e) {
+                // Safe to roll back only if SEFAZ did not authorize (cStat≠100).
+                // If the exception occurred after SEFAZ authorization (e.g., during
+                // Complements::toAuthorize or the DB write), the sequence counter
+                // may be out of sync. In that case, recover manually via SEFAZ portal.
                 $nfeStorage->definirUltimoNfe($serie, $nNF - 1);
                 $flash = ['tipo' => 'danger', 'msg' => 'Erro ao emitir: ' . $e->getMessage()];
             }
