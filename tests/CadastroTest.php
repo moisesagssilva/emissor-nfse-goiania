@@ -232,4 +232,166 @@ final class CadastroTest extends TestCase
         $url = ResponseParser::parseUrlNfse('<Resposta><Erro>falha</Erro></Resposta>');
         $this->assertNull($url);
     }
+
+    // ─── NfeStorage ──────────────────────────────────────────────────────────
+
+    public function testNfeStorageMigrateIdempotente(): void
+    {
+        $storage = new \EmissorGyn\NfeStorage(':memory:');
+        $storage2 = new \EmissorGyn\NfeStorage(':memory:');
+        $this->assertInstanceOf(\EmissorGyn\NfeStorage::class, $storage2);
+    }
+
+    public function testProximoNfeIncrementa(): void
+    {
+        $storage = new \EmissorGyn\NfeStorage(':memory:');
+        $this->assertSame(1, $storage->proximoNfe('1'));
+        $this->assertSame(2, $storage->proximoNfe('1'));
+        $this->assertSame(1, $storage->proximoNfe('2'));
+    }
+
+    public function testDefinirUltimoNfeFazRollback(): void
+    {
+        $storage = new \EmissorGyn\NfeStorage(':memory:');
+        $n = $storage->proximoNfe('1');
+        $this->assertSame(1, $n);
+        $storage->definirUltimoNfe('1', $n - 1);
+        $this->assertSame(1, $storage->proximoNfe('1'));
+    }
+
+    public function testCrudPedidos(): void
+    {
+        $storage = new \EmissorGyn\NfeStorage(':memory:');
+
+        // Precisa de um cliente na tabela clientes do mesmo SQLite — NfeStorage
+        // cria as tabelas de pedidos, mas clientes já existe em Cadastro.
+        // Para isolar o teste, criamos o cliente direto via PDO refletido.
+        // NfeStorage expõe o método de acesso ao pdo para fins de teste.
+        $pdo = $storage->getPdoForTest();
+        $pdo->exec(<<<'SQL'
+            CREATE TABLE IF NOT EXISTS clientes (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                razao_social TEXT NOT NULL,
+                cpf_cnpj TEXT NOT NULL,
+                uf TEXT,
+                cep TEXT,
+                logradouro TEXT,
+                numero TEXT,
+                bairro TEXT,
+                codigo_municipio TEXT,
+                municipio TEXT,
+                ativo INTEGER NOT NULL DEFAULT 1
+            )
+        SQL);
+        $pdo->exec(
+            "INSERT INTO clientes (razao_social, cpf_cnpj, uf) VALUES ('Teste LTDA', '11222333000181', 'GO')"
+        );
+        $clienteId = (int) $pdo->lastInsertId();
+
+        $dados = [
+            'cliente_id'           => $clienteId,
+            'natureza_operacao'    => 'Venda de mercadoria',
+            'consumidor_final'     => 0,
+            'presenca'             => 1,
+            'informacoes_adicionais' => '',
+            'criado_por'           => 1,
+        ];
+        $id = $storage->inserirPedido($dados);
+        $this->assertGreaterThan(0, $id);
+
+        $pedido = $storage->buscarPedido($id);
+        $this->assertNotNull($pedido);
+        $this->assertSame('rascunho', $pedido['status']);
+        $this->assertSame('Teste LTDA', $pedido['razao_social']);
+
+        $storage->aprovarPedido($id, 1);
+        $pedido = $storage->buscarPedido($id);
+        $this->assertSame('aprovado', $pedido['status']);
+
+        $storage->emitirPedido($id, 'CHAVE123', 1, '1', 'PROT123', '<xml/>');
+        $pedido = $storage->buscarPedido($id);
+        $this->assertSame('emitido', $pedido['status']);
+        $this->assertSame('CHAVE123', $pedido['nfe_chave']);
+        $this->assertSame('PROT123', $pedido['nfe_protocolo']);
+    }
+
+    public function testSubstituirItens(): void
+    {
+        $storage = new \EmissorGyn\NfeStorage(':memory:');
+        $pdo = $storage->getPdoForTest();
+        $pdo->exec(
+            "CREATE TABLE IF NOT EXISTS clientes (id INTEGER PRIMARY KEY AUTOINCREMENT, razao_social TEXT NOT NULL, cpf_cnpj TEXT NOT NULL)"
+        );
+        $pdo->exec("INSERT INTO clientes (razao_social, cpf_cnpj) VALUES ('C','11222333000181')");
+        $clienteId = (int) $pdo->lastInsertId();
+
+        $pedidoId = $storage->inserirPedido([
+            'cliente_id' => $clienteId, 'natureza_operacao' => 'Venda',
+            'consumidor_final' => 0, 'presenca' => 1,
+            'informacoes_adicionais' => '', 'criado_por' => 1,
+        ]);
+
+        $itens = [
+            [
+                'numero_item' => 1,
+                'codigo_produto' => 'P001',
+                'descricao' => 'Produto A',
+                'ncm' => '84713012',
+                'cfop' => '5102',
+                'unidade' => 'UN',
+                'quantidade' => '2.0000',
+                'valor_unitario' => '50.00',
+                'valor_desconto' => null,
+                'csosn' => '400',
+                'pis_cst' => '07',
+                'cofins_cst' => '07',
+                'informacoes_adicionais_item' => null,
+            ],
+        ];
+        $storage->substituirItens($pedidoId, $itens);
+
+        $lista = $storage->listarItens($pedidoId);
+        $this->assertCount(1, $lista);
+        $this->assertSame('Produto A', $lista[0]['descricao']);
+
+        // Substituir com 2 itens
+        $itens[] = array_merge($itens[0], ['numero_item' => 2, 'descricao' => 'Produto B']);
+        $storage->substituirItens($pedidoId, $itens);
+        $this->assertCount(2, $storage->listarItens($pedidoId));
+    }
+
+    public function testCancelarPedidoEmitidoRegistraEvento(): void
+    {
+        $storage = new \EmissorGyn\NfeStorage(':memory:');
+        $pdo = $storage->getPdoForTest();
+        $pdo->exec(
+            "CREATE TABLE IF NOT EXISTS clientes (id INTEGER PRIMARY KEY AUTOINCREMENT, razao_social TEXT NOT NULL, cpf_cnpj TEXT NOT NULL)"
+        );
+        $pdo->exec("INSERT INTO clientes (razao_social, cpf_cnpj) VALUES ('E','11222333000181')");
+        $clienteId = (int) $pdo->lastInsertId();
+        $pedidoId = $storage->inserirPedido([
+            'cliente_id' => $clienteId, 'natureza_operacao' => 'Venda',
+            'consumidor_final' => 0, 'presenca' => 1,
+            'informacoes_adicionais' => '', 'criado_por' => 1,
+        ]);
+        $storage->aprovarPedido($pedidoId, 1);
+        $storage->emitirPedido($pedidoId, 'CH', 1, '1', 'PR', '<x/>');
+        $storage->registrarEvento($pedidoId, 'cancelamento', 'PROT-CANC', 'Cancelado', '<ev/>', '<ret/>');
+        $storage->cancelarPedido($pedidoId);
+
+        $pedido = $storage->buscarPedido($pedidoId);
+        $this->assertSame('cancelado', $pedido['status']);
+
+        $eventos = $storage->listarEventos($pedidoId);
+        $this->assertCount(1, $eventos);
+        $this->assertSame('cancelamento', $eventos[0]['tipo']);
+    }
+
+    public function testNfeEstatisticas(): void
+    {
+        $storage = new \EmissorGyn\NfeStorage(':memory:');
+        $stats = $storage->estatisticas();
+        $this->assertArrayHasKey('rascunho', $stats);
+        $this->assertArrayHasKey('emitido', $stats);
+    }
 }
