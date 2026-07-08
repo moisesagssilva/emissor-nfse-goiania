@@ -54,8 +54,11 @@ final class NfeXmlFactory
         $std->finNFe   = 1;
         $std->indFinal = (int) ($pedido['consumidor_final'] ?? 0);
         $std->indPres  = (int) ($pedido['presenca'] ?? 1);
-        $std->procEmi  = 0;
-        $std->verProc  = '1.0';
+        // Indicador de intermediador/marketplace (NT 2023.004): 0 = venda direta, sem
+        // intermediador — a Lumina não opera via marketplace/plataforma de terceiros.
+        $std->indIntermed = '0';
+        $std->procEmi     = 0;
+        $std->verProc     = '1.0';
         $make->tagide($std);
 
         // EMIT
