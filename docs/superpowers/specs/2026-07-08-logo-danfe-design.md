@@ -7,9 +7,9 @@
 
 ## 1. Visão Geral
 
-Hoje a DANFE (representação impressa da NF-e) é gerada em `public/pages/pedidos/ver.php:15-16` via `NFePHP\DA\NFe\Danfe($xml)->monta()`, sem logotipo. A biblioteca `sped-da` já suporta logo através do parâmetro de `monta($logo)`, que aceita um caminho de arquivo PNG ou JPG (validação e conversão são feitas internamente por `DaCommon::adjustImage()`).
+Hoje a DANFE (representação impressa da NF-e) é gerada em `public/pages/pedidos/ver.php:14-16` via `NFePHP\DA\NFe\Danfe($xml)->render()`, sem logotipo. `render($logo = '')` é o ponto de entrada público da biblioteca `sped-da` (`DaCommon::render()`), que internamente chama o método `protected` `monta($logo)` — este último não pode ser chamado diretamente de fora da classe. `monta()`/`render()` aceitam um caminho de arquivo PNG ou JPG (validação e conversão são feitas internamente por `DaCommon::adjustImage()`).
 
-Esta mudança adiciona uma chave de configuração opcional `LOGO_PATH` no `.env` e passa esse caminho para `monta()`. Sem a chave configurada, o comportamento é idêntico ao atual (sem logo) — mudança pequena e retrocompatível, sem UI nova.
+Esta mudança adiciona uma chave de configuração opcional `LOGO_PATH` no `.env` e passa esse caminho para `render()`. Sem a chave configurada, o comportamento é idêntico ao atual (sem logo) — mudança pequena e retrocompatível, sem UI nova.
 
 ---
 
@@ -34,10 +34,13 @@ Em `public/pages/pedidos/ver.php`, no bloco de geração da DANFE:
 $xml      = (string) $danfePedido['nfe_xml_autorizado'];
 $danfe    = new NFePHP\DA\NFe\Danfe($xml);
 $logoPath = $config->path('LOGO_PATH', '');
-$danfe->monta(is_file($logoPath) ? $logoPath : '');
+// ... headers ...
+echo $danfe->render(is_file($logoPath) ? $logoPath : '');
 ```
 
 `$config` já está disponível nesse escopo (herdado via `require` a partir de `public/web.php:22`).
+
+**Nota:** `monta($logo)` é `protected` em `Danfe`/`DaCommon` — não pode ser chamado diretamente a partir do escopo global. `render($logo = '')` é o método público da biblioteca; ele chama `monta($logo)` internamente (lícito, pois é uma chamada de dentro da própria hierarquia de classes) e retorna os bytes do PDF via `$this->pdf->getPdf()`. Por isso o logo é passado para `render()`, não para `monta()`.
 
 **Nota:** `Config::path('LOGO_PATH', '')` não retorna string vazia quando a chave não existe — resolve o default `''` contra `baseDir`, retornando algo como `/opt/.../emissor-nfse-goiania/` (um diretório). É por isso que o `is_file($logoPath)` é indispensável: `is_file()` numa string de diretório retorna `false`, então o fallback para "sem logo" funciona corretamente mesmo nesse caso. Não simplificar removendo o `is_file()`.
 
@@ -47,7 +50,7 @@ Alinhamento do logo (esquerda/centro/direita) permanece no padrão da biblioteca
 
 ## 4. Tratamento de Erro
 
-- `LOGO_PATH` vazio, ou chave ausente do `.env`, ou arquivo inexistente → `monta('')`, comportamento idêntico ao atual (DANFE sem logo). Não é um erro.
+- `LOGO_PATH` vazio, ou chave ausente do `.env`, ou arquivo inexistente → `render('')`, comportamento idêntico ao atual (DANFE sem logo). Não é um erro.
 - Arquivo existe mas não é PNG/JPG → `DaCommon::adjustImage()` lança `\Exception` com mensagem clara ("O formato da imagem não é aceitável! Somente PNG ou JPG podem ser usados."). Deixamos propagar: é erro de configuração a ser corrigido pelo usuário, não algo para mascarar silenciosamente.
 
 ---

@@ -45,21 +45,21 @@ git commit -m "docs: document optional LOGO_PATH config for DANFE logo"
 
 ---
 
-### Task 2: Pass the logo path to `Danfe::monta()`
+### Task 2: Pass the logo path to `Danfe::render()`
 
 **Files:**
 - Modify: `public/pages/pedidos/ver.php:14-16`
 
 **Interfaces:**
 - Consumes: `Config::path(string $key, string $default): string` (existing, `src/Config.php:65-72`); `$config` is already in scope in `ver.php` (inherited via `require` from `public/web.php:22`).
-- Consumes: `NFePHP\DA\NFe\Danfe::monta($logo = '')` (existing library method, `vendor/nfephp-org/sped-da/src/NFe/Danfe.php:490-494`) — accepts a file path (or `''` for no logo) and internally validates it's PNG/JPG via `getimagesize()`, throwing `\Exception` on any other format.
+- Consumes: `NFePHP\DA\NFe\Danfe::render($logo = '')` (existing library public method, `vendor/nfephp-org/sped-da/src/Common/DaCommon.php:211-218`) — accepts a file path (or `''` for no logo), internally calls the `protected` `monta($logo)` (`vendor/nfephp-org/sped-da/src/NFe/Danfe.php:490-494`, which validates the file is PNG/JPG via `getimagesize()` and throws `\Exception` on any other format), and returns the rendered PDF bytes. `monta()` is `protected` and cannot be called directly from outside the class hierarchy — `render()` is the library's intended public entry point.
 
 - [ ] **Step 1: Read current code**
 
 ```php
 $xml   = (string) $danfePedido['nfe_xml_autorizado'];
 $danfe = new NFePHP\DA\NFe\Danfe($xml);
-$danfe->monta();
+echo $danfe->render();
 ```
 
 - [ ] **Step 2: Replace with logo-aware version**
@@ -68,7 +68,8 @@ $danfe->monta();
 $xml      = (string) $danfePedido['nfe_xml_autorizado'];
 $danfe    = new NFePHP\DA\NFe\Danfe($xml);
 $logoPath = $config->path('LOGO_PATH', '');
-$danfe->monta(is_file($logoPath) ? $logoPath : '');
+// ... headers ...
+echo $danfe->render(is_file($logoPath) ? $logoPath : '');
 ```
 
 Note: `$config->path('LOGO_PATH', '')` does **not** return `''` when the key is unset — it resolves the empty default against `baseDir`, yielding a directory path like `/opt/.../emissor-nfse-goiania/`. The `is_file()` guard is what makes the fallback correct (a directory is never a file), so do not remove it as a "simplification."
