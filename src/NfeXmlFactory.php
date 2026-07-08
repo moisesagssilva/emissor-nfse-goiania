@@ -117,7 +117,9 @@ final class NfeXmlFactory
 
             $std           = new \stdClass();
             $std->item     = $n;
-            $std->cProd    = $item['codigo_produto'] ?? str_pad((string) $n, 4, '0', STR_PAD_LEFT);
+            $std->cProd    = !empty($item['codigo_produto'])
+                ? $item['codigo_produto']
+                : str_pad((string) $n, 4, '0', STR_PAD_LEFT);
             $std->cEAN     = 'SEM GTIN';
             $std->xProd    = $item['descricao'];
             $std->NCM      = preg_replace('/\D/', '', $item['ncm']);
