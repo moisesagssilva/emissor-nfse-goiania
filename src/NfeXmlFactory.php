@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace EmissorGyn;
 
+use NFePHP\Common\TimeZoneByUF;
 use NFePHP\NFe\Make;
 
 final class NfeXmlFactory
@@ -40,8 +41,10 @@ final class NfeXmlFactory
         $std->mod      = 55;
         $std->serie    = (int) $serie;
         $std->nNF      = $nNF;
-        $std->dhEmi    = date('Y-m-d\TH:i:sP');
-        $std->dhSaiEnt = date('Y-m-d\TH:i:sP');
+        $tz            = new \DateTimeZone(TimeZoneByUF::get($this->config->get('PRESTADOR_UF')));
+        $agora         = (new \DateTime('now', $tz))->format('Y-m-d\TH:i:sP');
+        $std->dhEmi    = $agora;
+        $std->dhSaiEnt = $agora;
         $std->tpNF     = 1;
         $std->idDest   = $idDest;
         $std->cMunFG   = (int) $this->config->get('PRESTADOR_CODIGO_MUNICIPIO');
