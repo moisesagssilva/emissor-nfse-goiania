@@ -95,7 +95,7 @@ final class NfeClient
         $configJson = json_encode([
             'atualizacao' => date('Y-m-d H:i:s'),
             'tpAmb'       => $tpAmb,
-            'razaoSocial' => $this->config->get('PRESTADOR_RAZAO_SOCIAL'),
+            'razaosocial' => $this->config->get('PRESTADOR_RAZAO_SOCIAL'),
             'siglaUF'     => 'GO',
             'tokenIBPT'   => '',
             'CSC'         => '',
