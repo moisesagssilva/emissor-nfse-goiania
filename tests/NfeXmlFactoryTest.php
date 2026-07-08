@@ -193,7 +193,7 @@ final class NfeXmlFactoryTest extends TestCase
         }
     }
 
-    public function testDetPagComTPag90NaoInformaVPag(): void
+    public function testDetPagComTPag90InformaVPagZero(): void
     {
         $config  = new Config($this->tmpDir);
         $factory = new NfeXmlFactory($config);
