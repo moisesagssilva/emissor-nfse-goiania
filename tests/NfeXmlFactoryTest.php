@@ -255,4 +255,37 @@ final class NfeXmlFactoryTest extends TestCase
             "XML inválido contra o XSD oficial:\n" . implode("\n", $errors)
         );
     }
+
+    public function testIdeInformaIndIntermedComoSemIntermediador(): void
+    {
+        $config  = new Config($this->tmpDir);
+        $factory = new NfeXmlFactory($config);
+
+        $pedido = ['natureza_operacao' => 'Venda', 'consumidor_final' => 0, 'presenca' => 1, 'informacoes_adicionais' => ''];
+        $itens  = [[
+            'numero_item'                => 1,
+            'codigo_produto'             => 'P6',
+            'descricao'                  => 'Item qualquer',
+            'ncm'                        => '85414090',
+            'cfop'                       => '5102',
+            'unidade'                    => 'UN',
+            'quantidade'                 => '1.0000',
+            'valor_unitario'             => '100.00',
+            'valor_desconto'             => null,
+            'csosn'                      => '400',
+            'pis_cst'                    => '07',
+            'cofins_cst'                 => '07',
+            'informacoes_adicionais_item' => null,
+        ]];
+        $cliente = [
+            'razao_social' => 'Empresa GO', 'cpf_cnpj' => '11222333000181',
+            'logradouro' => 'Rua X', 'cliente_numero' => '1',
+            'bairro' => 'Setor Central', 'codigo_municipio' => '5208707', 'municipio' => 'Goiania',
+            'uf' => 'GO', 'cep' => '74000006',
+        ];
+
+        $xml = $factory->build($pedido, $itens, $cliente, 6, '1', '77778888');
+
+        $this->assertStringContainsString('<indIntermed>0</indIntermed>', $xml);
+    }
 }
