@@ -39,6 +39,8 @@ $danfe->monta(is_file($logoPath) ? $logoPath : '');
 
 `$config` já está disponível nesse escopo (herdado via `require` a partir de `public/web.php:22`).
 
+**Nota:** `Config::path('LOGO_PATH', '')` não retorna string vazia quando a chave não existe — resolve o default `''` contra `baseDir`, retornando algo como `/opt/.../emissor-nfse-goiania/` (um diretório). É por isso que o `is_file($logoPath)` é indispensável: `is_file()` numa string de diretório retorna `false`, então o fallback para "sem logo" funciona corretamente mesmo nesse caso. Não simplificar removendo o `is_file()`.
+
 Alinhamento do logo (esquerda/centro/direita) permanece no padrão da biblioteca (`logoAlign = 'C'`, centralizado) — não é exposto como configuração, pois não há necessidade identificada de customizá-lo.
 
 ---
