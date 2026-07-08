@@ -201,8 +201,13 @@ final class NfeXmlFactory
 
         $std       = new \stdClass();
         $std->tPag = '90';
-        $std->vPag = $totalNF;
-        $make->tagdetPag($std);
+        $detPag    = $make->tagdetPag($std);
+        // vPag não deve ser informado quando tPag=90 (Sem Pagamento) — SEFAZ rejeita com cStat=904.
+        // tagdetPag() sempre cria a tag vPag (mesmo vazia), por isso ela é removida do DOM aqui.
+        $vPag = $detPag->getElementsByTagName('vPag')->item(0);
+        if ($vPag !== null) {
+            $detPag->removeChild($vPag);
+        }
 
         // INF ADIC
         if (!empty($pedido['informacoes_adicionais'])) {
