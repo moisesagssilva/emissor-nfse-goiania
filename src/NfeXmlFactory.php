@@ -201,13 +201,11 @@ final class NfeXmlFactory
 
         $std       = new \stdClass();
         $std->tPag = '90';
-        $detPag    = $make->tagdetPag($std);
-        // vPag não deve ser informado quando tPag=90 (Sem Pagamento) — SEFAZ rejeita com cStat=904.
-        // tagdetPag() sempre cria a tag vPag (mesmo vazia), por isso ela é removida do DOM aqui.
-        $vPag = $detPag->getElementsByTagName('vPag')->item(0);
-        if ($vPag !== null) {
-            $detPag->removeChild($vPag);
-        }
+        // vPag é obrigatório no XSD (sem minOccurs=0) em todas as versões do schema, mas o SEFAZ
+        // rejeita (cStat=904) se vier com valor diferente de zero quando tPag=90 (Sem Pagamento).
+        // TDec_1302 aceita "0" como valor válido — é essa a convenção correta, não omitir a tag.
+        $std->vPag = 0;
+        $make->tagdetPag($std);
 
         // INF ADIC
         if (!empty($pedido['informacoes_adicionais'])) {
