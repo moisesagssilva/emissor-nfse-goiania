@@ -14,12 +14,11 @@ if (($_GET['acao'] ?? '') === 'danfe') {
         $xml      = (string) $danfePedido['nfe_xml_autorizado'];
         $danfe    = new NFePHP\DA\NFe\Danfe($xml);
         $logoPath = $config->path('LOGO_PATH', '');
-        $danfe->monta(is_file($logoPath) ? $logoPath : '');
         header('Content-Type: application/pdf');
         header(
             'Content-Disposition: inline; filename="nfe-' . $danfePedido['nfe_chave'] . '.pdf"'
         );
-        echo $danfe->render();
+        echo $danfe->render(is_file($logoPath) ? $logoPath : '');
         exit;
     }
     exit('XML autorizado não encontrado.');
