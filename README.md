@@ -83,7 +83,7 @@ ngrok http 8080
 - **Pedidos NF-e** — ciclo completo de NF-e de produto:
   - Criação com tabela dinâmica de itens (NCM, CFOP, CSOSN, PIS/COFINS por item)
   - Workflow: rascunho → aprovado → emitido → cancelado
-  - DANFE PDF gerado sob demanda (inline no navegador)
+  - DANFE PDF gerado sob demanda (inline no navegador), com logo da empresa opcional (`LOGO_PATH`)
   - Cancelamento com justificativa enviado à SEFAZ
 
 ---
@@ -112,6 +112,9 @@ PRESTADOR_CODIGO_MUNICIPIO=5208707
 PRESTADOR_MUNICIPIO=Goiânia
 PRESTADOR_UF=GO
 PRESTADOR_CEP=74000000
+
+# Logo da empresa no DANFE (opcional; PNG ou JPG). Deixe vazio para gerar sem logo.
+LOGO_PATH=
 ```
 
 ### Perfil fiscal Lumina
