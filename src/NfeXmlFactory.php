@@ -41,7 +41,7 @@ final class NfeXmlFactory
         $std->mod      = 55;
         $std->serie    = (int) $serie;
         $std->nNF      = $nNF;
-        $tz            = new \DateTimeZone(TimeZoneByUF::get($this->config->get('PRESTADOR_UF', 'GO')));
+        $tz            = new \DateTimeZone(TimeZoneByUF::get($this->config->get('PRESTADOR_UF')));
         $agora         = (new \DateTime('now', $tz))->format('Y-m-d\TH:i:sP');
         $std->dhEmi    = $agora;
         $std->dhSaiEnt = $agora;
