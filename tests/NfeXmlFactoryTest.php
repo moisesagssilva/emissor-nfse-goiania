@@ -192,4 +192,43 @@ final class NfeXmlFactoryTest extends TestCase
             date_default_timezone_set($originalTimezone);
         }
     }
+
+    public function testDetPagComTPag90NaoInformaVPag(): void
+    {
+        $config  = new Config($this->tmpDir);
+        $factory = new NfeXmlFactory($config);
+
+        $pedido = ['natureza_operacao' => 'Venda', 'consumidor_final' => 0, 'presenca' => 1, 'informacoes_adicionais' => ''];
+        $itens  = [[
+            'numero_item'                => 1,
+            'codigo_produto'             => 'P5',
+            'descricao'                  => 'Item qualquer',
+            'ncm'                        => '85414090',
+            'cfop'                       => '5102',
+            'unidade'                    => 'UN',
+            'quantidade'                 => '1.0000',
+            'valor_unitario'             => '73338.65',
+            'valor_desconto'             => null,
+            'csosn'                      => '400',
+            'pis_cst'                    => '07',
+            'cofins_cst'                 => '07',
+            'informacoes_adicionais_item' => null,
+        ]];
+        $cliente = [
+            'razao_social' => 'Empresa GO', 'cpf_cnpj' => '11222333000181',
+            'logradouro' => 'Rua X', 'cliente_numero' => '1',
+            'bairro' => 'B', 'codigo_municipio' => '5208707',
+            'uf' => 'GO', 'cep' => '74000005',
+        ];
+
+        $xml = $factory->build($pedido, $itens, $cliente, 5, '1', '55556666');
+
+        $this->assertStringContainsString('<tPag>90</tPag>', $xml);
+
+        $dom = new \DOMDocument();
+        $dom->loadXML($xml);
+        $detPag = $dom->getElementsByTagName('detPag')->item(0);
+        $this->assertNotNull($detPag);
+        $this->assertSame(0, $detPag->getElementsByTagName('vPag')->length);
+    }
 }
