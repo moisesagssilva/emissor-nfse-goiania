@@ -151,4 +151,45 @@ final class NfeXmlFactoryTest extends TestCase
 
         $this->assertStringContainsString('<cProd>0001</cProd>', $xml);
     }
+
+    public function testDhEmiUsaOffsetDeBrasiliaMesmoComTimezonePadraoUtc(): void
+    {
+        $originalTimezone = date_default_timezone_get();
+        date_default_timezone_set('UTC');
+
+        try {
+            $config  = new Config($this->tmpDir);
+            $factory = new NfeXmlFactory($config);
+
+            $pedido = ['natureza_operacao' => 'Venda', 'consumidor_final' => 0, 'presenca' => 1, 'informacoes_adicionais' => ''];
+            $itens  = [[
+                'numero_item'                => 1,
+                'codigo_produto'             => 'P4',
+                'descricao'                  => 'Item qualquer',
+                'ncm'                        => '85414090',
+                'cfop'                       => '5102',
+                'unidade'                    => 'UN',
+                'quantidade'                 => '1.0000',
+                'valor_unitario'             => '100.00',
+                'valor_desconto'             => null,
+                'csosn'                      => '400',
+                'pis_cst'                    => '07',
+                'cofins_cst'                 => '07',
+                'informacoes_adicionais_item' => null,
+            ]];
+            $cliente = [
+                'razao_social' => 'Empresa GO', 'cpf_cnpj' => '11222333000181',
+                'logradouro' => 'Rua X', 'cliente_numero' => '1',
+                'bairro' => 'B', 'codigo_municipio' => '5208707',
+                'uf' => 'GO', 'cep' => '74000004',
+            ];
+
+            $xml = $factory->build($pedido, $itens, $cliente, 4, '1', '33334444');
+
+            $this->assertMatchesRegularExpression('/<dhEmi>[^<]*-03:00<\/dhEmi>/', $xml);
+            $this->assertStringNotContainsString('+00:00', $xml);
+        } finally {
+            date_default_timezone_set($originalTimezone);
+        }
+    }
 }
