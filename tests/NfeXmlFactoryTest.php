@@ -217,18 +217,42 @@ final class NfeXmlFactoryTest extends TestCase
         $cliente = [
             'razao_social' => 'Empresa GO', 'cpf_cnpj' => '11222333000181',
             'logradouro' => 'Rua X', 'cliente_numero' => '1',
-            'bairro' => 'B', 'codigo_municipio' => '5208707',
+            'bairro' => 'Setor Central', 'codigo_municipio' => '5208707', 'municipio' => 'Goiania',
             'uf' => 'GO', 'cep' => '74000005',
         ];
 
         $xml = $factory->build($pedido, $itens, $cliente, 5, '1', '55556666');
 
         $this->assertStringContainsString('<tPag>90</tPag>', $xml);
+        $this->assertStringContainsString('<vPag>0.00</vPag>', $xml);
 
+        // A tag vPag é obrigatória no XSD oficial (sem minOccurs=0) em toda versão de schema —
+        // omiti-la (como uma correção anterior fez) produz um XML tecnicamente inválido, mesmo
+        // que satisfaça a regra de negócio do SEFAZ. Validamos contra o XSD real usado em
+        // produção (o mesmo que rejeitou a correção anterior) para não repetir esse erro
+        // especificamente. Este teste valida o XML sem assinatura (a assinatura é aplicada depois,
+        // por Signer::sign() em NfeClient), então ignoramos apenas o erro esperado de Signature
+        // ausente — qualquer outro erro, principalmente sobre vPag/detPag, deve falhar o teste.
+        $xsd = realpath(
+            __DIR__ . '/../vendor/nfephp-org/sped-nfe/schemes/PL_009_V4/nfe_v4.00.xsd'
+        );
+        $this->assertNotFalse($xsd, 'XSD de referência não encontrado');
+
+        libxml_use_internal_errors(true);
         $dom = new \DOMDocument();
         $dom->loadXML($xml);
-        $detPag = $dom->getElementsByTagName('detPag')->item(0);
-        $this->assertNotNull($detPag);
-        $this->assertSame(0, $detPag->getElementsByTagName('vPag')->length);
+        $dom->schemaValidate($xsd);
+        $errors = array_map(static fn ($e) => trim($e->message), libxml_get_errors());
+        libxml_clear_errors();
+
+        $errosRelevantes = array_filter(
+            $errors,
+            static fn (string $e) => !str_contains($e, 'infNFeSupl') && !str_contains($e, 'Signature')
+        );
+        $this->assertSame(
+            [],
+            array_values($errosRelevantes),
+            "XML inválido contra o XSD oficial:\n" . implode("\n", $errors)
+        );
     }
 }
