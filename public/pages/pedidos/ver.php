@@ -39,6 +39,10 @@ if ($pedido === null) {
 
 $flash = null;
 
+if (($_GET['clonado'] ?? '') === '1') {
+    $flash = ['tipo' => 'success', 'msg' => 'Pedido clonado com sucesso — revise antes de aprovar.'];
+}
+
 // ── POST actions ──────────────────────────────────────────────────────────────
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!$auth->validarCsrf($_POST['_csrf'] ?? '')) {
@@ -52,6 +56,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $nfeStorage->aprovarPedido($id, $uid);
             $pedido = $nfeStorage->buscarPedido($id);
             $flash  = ['tipo' => 'success', 'msg' => 'Pedido aprovado.'];
+        } elseif ($acao === 'clonar') {
+            try {
+                $novoId = $nfeStorage->clonarPedido($id, $uid);
+                header('Location: ?p=pedidos/ver&id=' . $novoId . '&clonado=1');
+                exit;
+            } catch (\RuntimeException $e) {
+                $flash = ['tipo' => 'danger', 'msg' => 'Erro ao clonar: ' . $e->getMessage()];
+            }
         } elseif (
             $acao === 'cancelar_rascunho'
             && in_array($pedido['status'], ['rascunho', 'aprovado'], true)
@@ -317,6 +329,14 @@ require PAGES_DIR . '/_head.php';
         </form>
     </div>
     <?php endif; ?>
+    <form method="post" class="d-inline">
+        <input type="hidden" name="_csrf" value="<?= h($auth->csrfToken()) ?>">
+        <input type="hidden" name="acao" value="clonar">
+        <button type="submit" class="btn btn-outline-secondary"
+                onclick="return confirm('Clonar este pedido para um novo rascunho?')">
+            Clonar
+        </button>
+    </form>
 </div>
 
 <?php if (!empty($eventos)) : ?>
