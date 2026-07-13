@@ -211,10 +211,7 @@ final class CadastroTest extends TestCase
 
     public function testClonarOrcamentoCopiaCamposEResetaCompetenciaEEstado(): void
     {
-        // Create users 1-98 to make Op3 have id 99
-        for ($i = 1; $i < 99; $i++) {
-            $this->db->inserirUsuario('Dummy' . $i, 'dummy' . $i . '@example.com', 'hash');
-        }
+        $clonadoPorId = $this->db->inserirUsuario('Clonador', 'clonador@lumina.com', 'hash');
 
         $clienteId = $this->db->inserirCliente([
             'razao_social' => 'Cliente Clone Orcamento',
@@ -240,7 +237,7 @@ final class CadastroTest extends TestCase
         $this->db->aprovarOrcamento($originalId, $usuarioId);
         $this->db->emitirOrcamento($originalId, 1, 'NFSE-ORIG');
 
-        $novoId = $this->db->clonarOrcamento($originalId, 99);
+        $novoId = $this->db->clonarOrcamento($originalId, $clonadoPorId);
         $this->assertGreaterThan(0, $novoId);
         $this->assertNotSame($originalId, $novoId);
 
@@ -250,7 +247,7 @@ final class CadastroTest extends TestCase
         $this->assertSame('2500.00', $novo['valor_servicos']);
         $this->assertSame('Instalação original', $novo['discriminacao']);
         $this->assertSame('rascunho', $novo['status']);
-        $this->assertSame(99, (int) $novo['criado_por']);
+        $this->assertSame($clonadoPorId, (int) $novo['criado_por']);
         $this->assertSame(date('Y-m-d'), $novo['competencia']);
         $this->assertNull($novo['nfse_numero']);
         $this->assertNull($novo['aprovado_por']);

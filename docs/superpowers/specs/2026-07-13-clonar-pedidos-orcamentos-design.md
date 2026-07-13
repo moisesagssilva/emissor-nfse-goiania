@@ -73,7 +73,7 @@ Busca o orçamento original (`buscarOrcamento()` ou equivalente já existente). 
 | `iss_retido` | Copiado |
 | `valor_deducoes`, `valor_pis`, `valor_cofins`, `valor_inss`, `valor_ir`, `valor_csll` | Copiados |
 | `desconto_incondicionado`, `desconto_condicionado` | Copiados |
-| `competencia` | **Não copiado** — resetado para o mês atual (`date('Y-m')`), pois um serviço clonado presumivelmente será prestado agora, não no mês de competência do original |
+| `competencia` | **Não copiado** — resetado para a data de hoje (`date('Y-m-d')`; o campo é uma data completa, não um mês-ano — mesmo padrão já usado em `form.php`/`XmlFactory.php`), pois um serviço clonado presumivelmente será prestado agora, não na competência do original |
 | `status` | Resetado para `'rascunho'` |
 | `criado_por` | Resetado para o `$usuarioId` |
 | `criado_em` | Resetado para agora (automático, via `inserirOrcamento()`) |
@@ -108,7 +108,7 @@ O handler:
 Testes automatizados (PHPUnit):
 
 - `NfeStorage::clonarPedido()`: clona um pedido com itens e confirma que (a) os campos de negócio foram copiados, (b) `status` é `'rascunho'`, (c) `criado_por` é o novo usuário informado, (d) os campos de numeração/emissão/aprovação são `null`, (e) os itens do novo pedido têm os mesmos dados do original.
-- `Cadastro::clonarOrcamento()`: clona um orçamento e confirma (a) campos de negócio copiados, (b) `status='rascunho'`, (c) `criado_por` correto, (d) `competencia` é o mês atual (não o do original), (e) campos de numeração/emissão são `null`.
+- `Cadastro::clonarOrcamento()`: clona um orçamento e confirma (a) campos de negócio copiados, (b) `status='rascunho'`, (c) `criado_por` correto, (d) `competencia` é a data de hoje (não a do original), (e) campos de numeração/emissão são `null`.
 
 Não há teste de UI automatizado (o projeto não tem suíte de testes de interface — mesma situação já registrada para geração de DANFE). Verificação da UI é manual: clicar em "Clonar" num pedido/orçamento existente e confirmar que a tela de edição do novo registro abre com os dados esperados.
 
