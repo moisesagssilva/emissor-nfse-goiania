@@ -507,6 +507,37 @@ final class Cadastro
         )->execute([$id]);
     }
 
+    public function clonarOrcamento(int $orcamentoId, int $usuarioId): int
+    {
+        $original = $this->buscarOrcamento($orcamentoId);
+        if ($original === null) {
+            throw new \RuntimeException('Orçamento não encontrado.');
+        }
+
+        return $this->inserirOrcamento([
+            'cliente_id'                  => (int) $original['cliente_id'],
+            'servico_id'                  => $original['servico_id'],
+            'competencia'                 => date('Y-m-d'),
+            'valor_servicos'              => $original['valor_servicos'],
+            'item_lista_servico'          => $original['item_lista_servico'],
+            'codigo_cnae'                 => $original['codigo_cnae'],
+            'codigo_tributacao_municipio' => $original['codigo_tributacao_municipio'],
+            'discriminacao'               => $original['discriminacao'],
+            'aliquota'                    => $original['aliquota'],
+            'exigibilidade_iss'           => (int) $original['exigibilidade_iss'],
+            'iss_retido'                  => (int) $original['iss_retido'],
+            'valor_deducoes'              => $original['valor_deducoes'],
+            'valor_pis'                   => $original['valor_pis'],
+            'valor_cofins'                => $original['valor_cofins'],
+            'valor_inss'                  => $original['valor_inss'],
+            'valor_ir'                    => $original['valor_ir'],
+            'valor_csll'                  => $original['valor_csll'],
+            'desconto_incondicionado'     => $original['desconto_incondicionado'],
+            'desconto_condicionado'       => $original['desconto_condicionado'],
+            'criado_por'                  => $usuarioId,
+        ]);
+    }
+
     /** @return array<string,mixed> */
     public function estatisticas(): array
     {

@@ -209,6 +209,60 @@ final class CadastroTest extends TestCase
         $this->assertSame('cancelado', $orc['status']);
     }
 
+    public function testClonarOrcamentoCopiaCamposEResetaCompetenciaEEstado(): void
+    {
+        // Create users 1-98 to make Op3 have id 99
+        for ($i = 1; $i < 99; $i++) {
+            $this->db->inserirUsuario('Dummy' . $i, 'dummy' . $i . '@example.com', 'hash');
+        }
+
+        $clienteId = $this->db->inserirCliente([
+            'razao_social' => 'Cliente Clone Orcamento',
+            'cpf_cnpj'     => '55555555000155',
+        ]);
+        $usuarioId = $this->db->inserirUsuario('Op3', 'op3@lumina.com', 'hash');
+
+        $originalId = $this->db->inserirOrcamento([
+            'cliente_id'                  => $clienteId,
+            'servico_id'                  => '',
+            'competencia'                 => '2020-01-01',
+            'valor_servicos'              => '2500.00',
+            'item_lista_servico'          => '7.02',
+            'codigo_cnae'                 => '4321500',
+            'codigo_tributacao_municipio' => '5208707',
+            'discriminacao'               => 'Instalação original',
+            'aliquota'                    => '2.00',
+            'exigibilidade_iss'           => 1,
+            'iss_retido'                  => 2,
+            'valor_deducoes'              => '0.00',
+            'criado_por'                  => $usuarioId,
+        ]);
+        $this->db->aprovarOrcamento($originalId, $usuarioId);
+        $this->db->emitirOrcamento($originalId, 1, 'NFSE-ORIG');
+
+        $novoId = $this->db->clonarOrcamento($originalId, 99);
+        $this->assertGreaterThan(0, $novoId);
+        $this->assertNotSame($originalId, $novoId);
+
+        $novo = $this->db->buscarOrcamento($novoId);
+        $this->assertNotNull($novo);
+        $this->assertSame($clienteId, (int) $novo['cliente_id']);
+        $this->assertSame('2500.00', $novo['valor_servicos']);
+        $this->assertSame('Instalação original', $novo['discriminacao']);
+        $this->assertSame('rascunho', $novo['status']);
+        $this->assertSame(99, (int) $novo['criado_por']);
+        $this->assertSame(date('Y-m-d'), $novo['competencia']);
+        $this->assertNull($novo['nfse_numero']);
+        $this->assertNull($novo['aprovado_por']);
+        $this->assertNull($novo['emitido_em']);
+    }
+
+    public function testClonarOrcamentoInexistenteLancaExcecao(): void
+    {
+        $this->expectException(\RuntimeException::class);
+        $this->db->clonarOrcamento(999, 1);
+    }
+
     public function testEstatisticas(): void
     {
         $stats = $this->db->estatisticas();
