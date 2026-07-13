@@ -24,7 +24,7 @@ São duas implementações independentes (uma por módulo), sem abstração comp
 public function clonarPedido(int $pedidoId, int $usuarioId): int
 ```
 
-Busca o pedido original (`buscarPedido()`) e seus itens (`listarItens()`). Se o pedido não existir, retorna erro tratável pelo chamador (ver §5). Chama `inserirPedido()` com os campos copiados abaixo, depois `substituirItens()` no novo ID com os itens originais (mantendo `numero_item`, código, descrição, NCM, CFOP, unidade, quantidade, valores, CSOSN, CST PIS/COFINS).
+Busca o pedido original (`buscarPedido()`) e seus itens (`listarItens()`). Se `buscarPedido()` retornar `null` (pedido inexistente), lança `\RuntimeException('Pedido não encontrado.')` — ver §5 para como o chamador trata isso. Caso contrário, chama `inserirPedido()` com os campos copiados abaixo, depois `substituirItens()` no novo ID com os itens originais (mantendo `numero_item`, código, descrição, NCM, CFOP, unidade, quantidade, valores, CSOSN, CST PIS/COFINS).
 
 ### 2.2 Campos
 
@@ -55,7 +55,7 @@ Busca o pedido original (`buscarPedido()`) e seus itens (`listarItens()`). Se o 
 public function clonarOrcamento(int $orcamentoId, int $usuarioId): int
 ```
 
-Busca o orçamento original e chama `inserirOrcamento()` com os campos copiados abaixo.
+Busca o orçamento original (`buscarOrcamento()` ou equivalente já existente). Se retornar `null`, lança `\RuntimeException('Orçamento não encontrado.')` — mesmo tratamento do pedido, ver §5. Caso contrário, chama `inserirOrcamento()` com os campos copiados abaixo.
 
 ### 3.2 Campos
 
@@ -98,7 +98,7 @@ O handler:
 
 ## 5. Tratamento de Erro
 
-- ID original inexistente (rota adulterada manualmente) → erro 404, mesmo padrão já usado em `ver.php` para outros casos de `id` inválido.
+- ID original inexistente (rota adulterada manualmente): `clonarPedido()`/`clonarOrcamento()` lançam `\RuntimeException`. O handler `acao=clonar` em `ver.php` já tem `$pedido`/`$orcamento` carregado nesse ponto (a página só chega lá se o registro existir — mesmo padrão de `buscarPedido() === null → http_response_code(404)` já usado no topo de `ver.php`), então esse `catch` é defensivo (cobre corrida entre carregar a página e o POST, ex.: o registro foi apagado nesse meio-tempo), não o caminho principal.
 - Para pedidos: `inserirPedido()` e `substituirItens()` são chamadas sequenciais, não envolvidas numa transação única cobrindo as duas. `substituirItens()` já abre sua própria transação internamente. Se `inserirPedido()` funcionar mas `substituirItens()` falhar (ex.: erro de banco), o pedido clonado fica criado sem itens — aceitável, pois é um rascunho editável/excluível pelo usuário, não uma emissão real.
 
 ---
