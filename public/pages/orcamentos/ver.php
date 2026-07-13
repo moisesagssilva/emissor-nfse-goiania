@@ -17,6 +17,9 @@ if ($orcamento === null) {
 }
 
 $flash   = null;
+if (($_GET['clonado'] ?? '') === '1') {
+    $flash = ['tipo' => 'success', 'msg' => 'Orçamento clonado com sucesso — revise antes de aprovar.'];
+}
 $usuario = $auth->usuarioAtual();
 
 // ── DANFS-e via redirect GET (não altera estado) ──────────────────────────────
@@ -51,6 +54,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $cadastro->aprovarOrcamento($id, (int) ($usuario['id'] ?? 0));
             $orcamento = $cadastro->buscarOrcamento($id);
             $flash     = ['tipo' => 'success', 'msg' => 'Orçamento aprovado.'];
+        } elseif ($acao === 'clonar') {
+            try {
+                $novoId = $cadastro->clonarOrcamento($id, (int) ($usuario['id'] ?? 0));
+                header('Location: ?p=orcamentos/ver&id=' . $novoId . '&clonado=1');
+                exit;
+            } catch (\RuntimeException $e) {
+                $flash = ['tipo' => 'danger', 'msg' => 'Erro ao clonar: ' . $e->getMessage()];
+            }
         } elseif (
             $acao === 'cancelar'
             && in_array($orcamento['status'], ['rascunho', 'aprovado'], true)
@@ -239,6 +250,11 @@ require PAGES_DIR . '/_head.php';
 <div class="mt-4 d-flex gap-2 flex-wrap">
     <form method="post">
         <input type="hidden" name="_csrf" value="<?= h($auth->csrfToken()) ?>">
+        <button type="submit" name="acao" value="clonar"
+                class="btn btn-outline-secondary"
+                onclick="return confirm('Clonar este orçamento para um novo rascunho?')">
+            Clonar
+        </button>
 
         <?php if ($status === 'rascunho') : ?>
         <a href="?p=orcamentos/form&amp;id=<?= $id ?>"
