@@ -378,6 +378,89 @@ final class CadastroTest extends TestCase
         $this->assertCount(2, $storage->listarItens($pedidoId));
     }
 
+    public function testClonarPedidoCopiaCamposEItensEResetaEstado(): void
+    {
+        $storage = new \EmissorGyn\NfeStorage(':memory:');
+        $pdo = $storage->getPdoForTest();
+        $pdo->exec(<<<'SQL'
+            CREATE TABLE IF NOT EXISTS clientes (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                razao_social TEXT NOT NULL,
+                cpf_cnpj TEXT NOT NULL,
+                logradouro TEXT,
+                numero TEXT,
+                complemento TEXT,
+                bairro TEXT,
+                municipio TEXT,
+                codigo_municipio TEXT,
+                uf TEXT,
+                cep TEXT,
+                email TEXT,
+                telefone TEXT,
+                ativo INTEGER NOT NULL DEFAULT 1
+            )
+        SQL);
+        $pdo->exec("INSERT INTO clientes (razao_social, cpf_cnpj) VALUES ('Cliente Clone','11222333000181')");
+        $clienteId = (int) $pdo->lastInsertId();
+
+        $originalId = $storage->inserirPedido([
+            'cliente_id'             => $clienteId,
+            'natureza_operacao'      => 'Venda de mercadoria',
+            'consumidor_final'       => 1,
+            'presenca'               => 1,
+            'informacoes_adicionais' => 'Observação original',
+            'criado_por'             => 1,
+        ]);
+        $storage->substituirItens($originalId, [[
+            'numero_item'                 => 1,
+            'codigo_produto'              => 'P001',
+            'descricao'                   => 'Produto Clonável',
+            'ncm'                         => '84713012',
+            'cfop'                        => '5102',
+            'unidade'                     => 'UN',
+            'quantidade'                  => '3.0000',
+            'valor_unitario'              => '150.00',
+            'valor_desconto'              => null,
+            'csosn'                       => '400',
+            'pis_cst'                     => '07',
+            'cofins_cst'                  => '07',
+            'informacoes_adicionais_item' => null,
+        ]]);
+        $storage->aprovarPedido($originalId, 1);
+        $storage->emitirPedido($originalId, 'CHAVE-ORIG', 1, '1', 'PROT-ORIG', '<xml/>');
+
+        $novoId = $storage->clonarPedido($originalId, 42);
+        $this->assertGreaterThan(0, $novoId);
+        $this->assertNotSame($originalId, $novoId);
+
+        $novo = $storage->buscarPedido($novoId);
+        $this->assertNotNull($novo);
+        $this->assertSame($clienteId, (int) $novo['cliente_id']);
+        $this->assertSame('Venda de mercadoria', $novo['natureza_operacao']);
+        $this->assertSame(1, (int) $novo['consumidor_final']);
+        $this->assertSame('Observação original', $novo['informacoes_adicionais']);
+        $this->assertSame('rascunho', $novo['status']);
+        $this->assertSame(42, (int) $novo['criado_por']);
+        $this->assertNull($novo['nfe_chave']);
+        $this->assertNull($novo['nfe_numero']);
+        $this->assertNull($novo['nfe_protocolo']);
+        $this->assertNull($novo['aprovado_por']);
+        $this->assertNull($novo['emitido_em']);
+
+        $itensClonados = $storage->listarItens($novoId);
+        $this->assertCount(1, $itensClonados);
+        $this->assertSame('Produto Clonável', $itensClonados[0]['descricao']);
+        $this->assertSame('P001', $itensClonados[0]['codigo_produto']);
+        $this->assertSame('150.00', $itensClonados[0]['valor_unitario']);
+    }
+
+    public function testClonarPedidoInexistenteLancaExcecao(): void
+    {
+        $storage = new \EmissorGyn\NfeStorage(':memory:');
+        $this->expectException(\RuntimeException::class);
+        $storage->clonarPedido(999, 1);
+    }
+
     public function testCancelarPedidoEmitidoRegistraEvento(): void
     {
         $storage = new \EmissorGyn\NfeStorage(':memory:');

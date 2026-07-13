@@ -254,6 +254,27 @@ final class NfeStorage
         )->execute([$id]);
     }
 
+    public function clonarPedido(int $pedidoId, int $usuarioId): int
+    {
+        $original = $this->buscarPedido($pedidoId);
+        if ($original === null) {
+            throw new \RuntimeException('Pedido não encontrado.');
+        }
+
+        $novoId = $this->inserirPedido([
+            'cliente_id'             => (int) $original['cliente_id'],
+            'natureza_operacao'      => $original['natureza_operacao'],
+            'consumidor_final'       => (int) $original['consumidor_final'],
+            'presenca'               => (int) $original['presenca'],
+            'informacoes_adicionais' => $original['informacoes_adicionais'],
+            'criado_por'             => $usuarioId,
+        ]);
+
+        $this->substituirItens($novoId, $this->listarItens($pedidoId));
+
+        return $novoId;
+    }
+
     // ─── Itens ───────────────────────────────────────────────────────────────
 
     /** @return array<int,array<string,mixed>> */
