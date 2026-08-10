@@ -2,4 +2,5 @@
 set -e
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 export OPENSSL_CONF="$DIR/../openssl_legacy.cnf"
-exec php "$DIR/nfse.php" "$@"
+PORT="${PORT:-8081}"
+exec php -S "127.0.0.1:${PORT}" "$DIR/../public/api.php"

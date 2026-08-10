@@ -2,4 +2,4 @@
 set -e
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 export OPENSSL_CONF="$DIR/../openssl_legacy.cnf"
-exec php "$DIR/nfse.php" "$@"
+exec php -S 0.0.0.0:8080 "$DIR/../public/web.php"

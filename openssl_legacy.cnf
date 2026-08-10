@@ -1,0 +1,17 @@
+# OpenSSL 3.x moveu o PKCS12KDF (usado para verificar o MAC de qualquer .pfx,
+# mesmo com cifra moderna) para o provider "legacy". Sem isso, openssl_pkcs12_read()
+# falha com "digital envelope routines::unsupported" em certificados A1 comuns.
+openssl_conf = openssl_init
+
+[openssl_init]
+providers = provider_sect
+
+[provider_sect]
+default = default_sect
+legacy = legacy_sect
+
+[default_sect]
+activate = 1
+
+[legacy_sect]
+activate = 1

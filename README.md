@@ -57,7 +57,7 @@ sudo apt install php8.2-cli php8.2-curl php8.2-xml php8.2-mbstring \
                  php8.2-sqlite3 php8.2-soap php8.2-gd composer
 composer install --no-dev --optimize-autoloader
 cp .env.example .env && nano .env
-chmod +x bin/nfse
+chmod +x bin/nfse bin/nfse.php bin/web bin/api
 ```
 
 ---
@@ -65,7 +65,7 @@ chmod +x bin/nfse
 ## Interface Web
 
 ```bash
-php -S 0.0.0.0:8080 public/web.php
+bin/web
 ```
 
 Acesse `http://localhost:8080` no navegador. Para expor externamente:
@@ -163,8 +163,11 @@ Regras de cancelamento (IN SMF 16/2025): pelo WebService **até o 5º dia do mê
 ## API HTTP JSON (integração com sistema de gestão)
 
 ```bash
-php -S 127.0.0.1:8080 public/api.php
+bin/api               # sobe em 127.0.0.1:8081 por padrão
+PORT=8082 bin/api      # para usar outra porta (ex: se 8081 já estiver ocupada)
 ```
+
+Porta padrão `8081`, separada da interface web (`bin/web`, porta `8080`), para não haver conflito ao rodar os dois ao mesmo tempo.
 
 Todos os endpoints exigem `Authorization: Bearer <API_TOKEN>` (defina no `.env`).
 
@@ -178,7 +181,7 @@ Todos os endpoints exigem `Authorization: Bearer <API_TOKEN>` (defina no `.env`)
 | GET | `/historico` | Histórico local |
 
 ```bash
-curl -X POST http://127.0.0.1:8080/emitir \
+curl -X POST http://127.0.0.1:8081/emitir \
   -H "Authorization: Bearer SEU_TOKEN" \
   -H "Content-Type: application/json" \
   -d @examples/nota.json
@@ -198,10 +201,28 @@ bin/nfse set-rps --numero <ultimo_numero_usado>
 
 ---
 
+## Solução de problemas
+
+### `Impossivel ler o certificado ... digital envelope routines::unsupported`
+
+Certificados A1 (.pfx) brasileiros costumam usar algoritmos legados (RC2/SHA1) que o
+OpenSSL 3.x desabilita por padrão, mesmo quando o provider `legacy` está ativo — a
+verificação do MAC do PKCS12 (`PKCS12KDF`) some se o provider `default` não estiver
+ativado junto. Use sempre os wrappers `bin/nfse`, `bin/web` e `bin/api` (em vez de
+chamar `php` diretamente): eles exportam `OPENSSL_CONF` apontando para
+`openssl_legacy.cnf`, que ativa os dois providers só para este projeto, sem alterar a
+configuração global do OpenSSL do sistema.
+
+---
+
 ## Estrutura do projeto
 
 ```
-bin/nfse                      CLI NFS-e
+bin/nfse                      Wrapper: exporta OPENSSL_CONF e chama bin/nfse.php
+bin/nfse.php                  CLI NFS-e
+bin/web                       Wrapper: sobe a interface web (php -S) com OPENSSL_CONF
+bin/api                       Wrapper: sobe a API HTTP (php -S) com OPENSSL_CONF
+openssl_legacy.cnf            Config OpenSSL (providers default+legacy) p/ ler .pfx
 public/
   web.php                     Interface web (router + bootstrap)
   api.php                     API HTTP JSON

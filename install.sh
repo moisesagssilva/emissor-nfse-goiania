@@ -29,7 +29,7 @@ composer install --no-dev --optimize-autoloader
 
 echo "==> Preparando diretórios e configuração..."
 mkdir -p storage/xml
-chmod +x bin/nfse
+chmod +x bin/nfse bin/nfse.php bin/web bin/api
 if [ ! -f .env ]; then
     cp .env.example .env
     echo ""
