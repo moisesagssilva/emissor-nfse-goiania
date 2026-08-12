@@ -177,9 +177,9 @@ $exigDescricoes = [
     </div>
     <div class="col-md-3">
         <label class="form-label">Valor dos Serviços (R$) *</label>
-        <input type="text" name="valor_servicos" class="form-control" required
+        <input type="text" name="valor_servicos" id="valor_servicos" class="form-control" required
                value="<?= h((string) ($v['valor_servicos'] ?? '')) ?>"
-               placeholder="3500.00">
+               placeholder="3500.00" oninput="atualizarValorIss()">
     </div>
     <div class="col-md-3">
         <label class="form-label">Item Lista Serviço *</label>
@@ -215,8 +215,14 @@ $exigDescricoes = [
     </div>
     <div class="col-md-2">
         <label class="form-label">Alíquota (%)</label>
-        <input type="text" name="aliquota" class="form-control"
-               value="<?= h((string) ($v['aliquota'] ?? $tpl['aliquota'] ?? '')) ?>">
+        <input type="text" name="aliquota" id="aliquota" class="form-control"
+               value="<?= h((string) ($v['aliquota'] ?? $tpl['aliquota'] ?? '')) ?>"
+               oninput="atualizarValorIss()">
+    </div>
+    <div class="col-md-2">
+        <label class="form-label">Valor do ISS (R$)</label>
+        <input type="text" id="valor_iss_calculado" class="form-control" disabled placeholder="—">
+        <small class="form-text text-muted">Calculado: valor × alíquota.</small>
     </div>
     <div class="col-md-2">
         <label class="form-label">ISS Retido</label>
@@ -260,4 +266,17 @@ $exigDescricoes = [
         <button type="submit" class="btn btn-primary">Salvar Rascunho</button>
     </div>
 </form>
+<script>
+function atualizarValorIss() {
+    var valor = parseFloat(document.getElementById('valor_servicos').value.replace(',', '.'));
+    var aliquota = parseFloat(document.getElementById('aliquota').value.replace(',', '.'));
+    var campo = document.getElementById('valor_iss_calculado');
+    if (isNaN(valor) || isNaN(aliquota)) {
+        campo.value = '';
+        return;
+    }
+    campo.value = (valor * aliquota / 100).toFixed(2);
+}
+atualizarValorIss();
+</script>
 <?php require PAGES_DIR . '/_foot.php'; ?>
