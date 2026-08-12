@@ -41,7 +41,9 @@ final class XmlFactory
         $codMun = $cfg->get('CODIGO_MUNICIPIO', '5208707');
         $id = 'rps' . $numeroRps . 's' . $serie;
 
-        $dataEmissao = $dados['data_emissao'] ?? date('Y-m-d\TH:i:s');
+        // Rps/DataEmissao é xsd:date no XSD ABRASF 2.04 (só AAAA-MM-DD, sem hora) —
+        // enviar dateTime aqui causa E160 "Arquivo em desacordo com o XML Schema".
+        $dataEmissao = $dados['data_emissao'] ?? date('Y-m-d');
         $competencia = $dados['competencia'] ?? date('Y-m-d');
 
         $xml = '<GerarNfseEnvio xmlns="' . self::XMLNS . '">'
@@ -168,7 +170,9 @@ final class XmlFactory
             ? '<Cpf>' . $doc . '</Cpf>'
             : '<Cnpj>' . $doc . '</Cnpj>';
 
-        $xml = '<Tomador>'
+        // O XSD ABRASF 2.04 nomeia esse elemento TomadorServico (não Tomador) —
+        // nome errado também causa E160 "Arquivo em desacordo com o XML Schema".
+        $xml = '<TomadorServico>'
             . '<IdentificacaoTomador>'
             . '<CpfCnpj>' . $docTag . '</CpfCnpj>';
         if (!empty($t['inscricao_municipal'])) {
@@ -205,7 +209,7 @@ final class XmlFactory
             $xml .= '</Contato>';
         }
 
-        $xml .= '</Tomador>';
+        $xml .= '</TomadorServico>';
         return $xml;
     }
 

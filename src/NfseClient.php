@@ -226,10 +226,20 @@ final class NfseClient
             // fallback: alguns servidores devolvem {Operacao}Result
             $nodes = $dom->getElementsByTagName($operation . 'Result');
         }
-        if ($nodes->length === 0) {
-            throw new \RuntimeException("Resposta sem outputXML em {$operation}: " . substr($soapResponse, 0, 500));
+        if ($nodes->length > 0) {
+            return trim($nodes->item(0)->textContent);
         }
-        return trim($nodes->item(0)->textContent);
+
+        // Em falhas de validação (ex.: E160), o SGISS às vezes devolve a resposta
+        // ABRASF como elementos diretos dentro de {Operacao}Response, sem o
+        // envelope outputXML. Repassa esse nó (já é XML válido de ListaMensagemRetorno)
+        // em vez de estourar com o SOAP cru truncado.
+        $respostaNodes = $dom->getElementsByTagName($operation . 'Resposta');
+        if ($respostaNodes->length > 0) {
+            return trim($dom->saveXML($respostaNodes->item(0)));
+        }
+
+        throw new \RuntimeException("Resposta sem outputXML em {$operation}: " . substr($soapResponse, 0, 500));
     }
 
     private function salvarXml(string $nome, string $conteudo): void
