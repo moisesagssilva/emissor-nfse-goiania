@@ -76,7 +76,7 @@ final class XmlFactory
 
         $valorServicos = self::dec($s['valor_servicos'] ?? null, 'valor_servicos é obrigatório');
         $issRetido = (string) ($s['iss_retido'] ?? 2); // 1=retido pelo tomador, 2=não retido
-        $itemLista = (string) ($s['item_lista_servico'] ?? '');
+        $itemLista = self::normalizarItemLista((string) ($s['item_lista_servico'] ?? ''));
         if ($itemLista === '') {
             throw new \InvalidArgumentException('item_lista_servico (subitem LC 116/2003, ex.: 7.02) é obrigatório');
         }
@@ -84,6 +84,11 @@ final class XmlFactory
         if ($discriminacao === '') {
             throw new \InvalidArgumentException('discriminacao do serviço é obrigatória');
         }
+
+        // Precisa ser calculado antes dos Valores: quando o ISS é devido a outro
+        // município, o ValorIss deixa de ser opcional (ver abaixo).
+        $municipioIncidencia = (string) ($s['municipio_incidencia'] ?? $codMun);
+        $incidenciaForaDoMunicipio = $municipioIncidencia !== '' && $municipioIncidencia !== $codMun;
 
         $valores = '<ValorServicos>' . $valorServicos . '</ValorServicos>';
         $camposValor = [
@@ -99,6 +104,16 @@ final class XmlFactory
         foreach ($camposValor as $k => $tag) {
             if (isset($s[$k]) && $s[$k] !== '' && $s[$k] !== null) {
                 $valores .= "<{$tag}>" . self::dec($s[$k]) . "</{$tag}>";
+            } elseif ($k === 'valor_iss' && $incidenciaForaDoMunicipio) {
+                // E340: "Quando o ISSQN é devido a outro município, o valor do
+                // tributo deve ser calculado e informado pelo prestador do serviço."
+                if (!isset($s['aliquota']) || $s['aliquota'] === '' || $s['aliquota'] === null) {
+                    throw new \InvalidArgumentException(
+                        'aliquota é obrigatória para calcular o ValorIss quando o município de incidência do ISS é diferente do município do prestador'
+                    );
+                }
+                $valorIssCalculado = round(((float) $valorServicos) * ((float) self::dec($s['aliquota'])) / 100, 2);
+                $valores .= "<{$tag}>" . self::dec($valorIssCalculado) . "</{$tag}>";
             }
         }
         // Simples Nacional sem retenção: alíquota pode ficar em branco (FAQ SGISS, item 24).
@@ -310,6 +325,20 @@ final class XmlFactory
     private static function digits(string $value): string
     {
         return preg_replace('/\D/', '', $value) ?? '';
+    }
+
+    /**
+     * ItemListaServico é uma enumeração fechada no XSD ABRASF 2.04 e exige o
+     * grupo com 2 dígitos (ex.: "07.02"). "7.02" não está na lista de valores
+     * aceitos e causa E160 "Arquivo em desacordo com o XML Schema".
+     */
+    private static function normalizarItemLista(string $item): string
+    {
+        $item = trim($item);
+        if (preg_match('/^(\d{1,2})\.(\d{2})$/', $item, $m)) {
+            return str_pad($m[1], 2, '0', STR_PAD_LEFT) . '.' . $m[2];
+        }
+        return $item;
     }
 
     /** Normaliza valores decimais para o formato 0.00 exigido pelo XSD. */
