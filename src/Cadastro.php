@@ -133,6 +133,14 @@ final class Cadastro
             $this->pdo->exec('ALTER TABLE clientes ADD COLUMN municipio TEXT');
         } catch (\PDOException) {
         }
+        try {
+            $this->pdo->exec('ALTER TABLE orcamentos ADD COLUMN codigo_municipio_prestacao TEXT');
+        } catch (\PDOException) {
+        }
+        try {
+            $this->pdo->exec('ALTER TABLE orcamentos ADD COLUMN municipio_incidencia TEXT');
+        } catch (\PDOException) {
+        }
     }
 
     // ─── Usuários ────────────────────────────────────────────────────────────
@@ -406,8 +414,9 @@ final class Cadastro
                  discriminacao, aliquota, exigibilidade_iss, iss_retido,
                  valor_deducoes, valor_pis, valor_cofins, valor_inss,
                  valor_ir, valor_csll, desconto_incondicionado, desconto_condicionado,
+                 codigo_municipio_prestacao, municipio_incidencia,
                  criado_por)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
         );
         $svcId = (isset($dados['servico_id']) && $dados['servico_id'] !== '')
             ? (int) $dados['servico_id']
@@ -432,6 +441,8 @@ final class Cadastro
             $dados['valor_csll'] ?? null,
             $dados['desconto_incondicionado'] ?? null,
             $dados['desconto_condicionado'] ?? null,
+            $dados['codigo_municipio_prestacao'] ?? null,
+            $dados['municipio_incidencia'] ?? null,
             (int) $dados['criado_por'],
         ]);
         return (int) $this->pdo->lastInsertId();
@@ -450,7 +461,7 @@ final class Cadastro
                 discriminacao = ?, aliquota = ?, exigibilidade_iss = ?, iss_retido = ?,
                 valor_deducoes = ?, valor_pis = ?, valor_cofins = ?, valor_inss = ?,
                 valor_ir = ?, valor_csll = ?, desconto_incondicionado = ?,
-                desconto_condicionado = ?
+                desconto_condicionado = ?, codigo_municipio_prestacao = ?, municipio_incidencia = ?
              WHERE id = ? AND status = 'rascunho'"
         )->execute([
             (int) $dados['cliente_id'],
@@ -472,6 +483,8 @@ final class Cadastro
             $dados['valor_csll'] ?? null,
             $dados['desconto_incondicionado'] ?? null,
             $dados['desconto_condicionado'] ?? null,
+            $dados['codigo_municipio_prestacao'] ?? null,
+            $dados['municipio_incidencia'] ?? null,
             $id,
         ]);
     }
@@ -534,6 +547,8 @@ final class Cadastro
             'valor_csll'                  => $original['valor_csll'],
             'desconto_incondicionado'     => $original['desconto_incondicionado'],
             'desconto_condicionado'       => $original['desconto_condicionado'],
+            'codigo_municipio_prestacao'  => $original['codigo_municipio_prestacao'] ?? null,
+            'municipio_incidencia'        => $original['municipio_incidencia'] ?? null,
             'criado_por'                  => $usuarioId,
         ]);
     }

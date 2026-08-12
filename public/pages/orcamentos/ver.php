@@ -98,6 +98,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         'valor_csll'                  => $orcamento['valor_csll'] ?? '',
                         'desconto_incondicionado'     => $orcamento['desconto_incondicionado'] ?? '',
                         'desconto_condicionado'       => $orcamento['desconto_condicionado'] ?? '',
+                        'codigo_municipio_prestacao'  => $orcamento['codigo_municipio_prestacao'] ?: null,
+                        'municipio_incidencia'        => $orcamento['municipio_incidencia'] ?? '',
                     ],
                     'tomador' => [
                         'cpf_cnpj'     => $orcamento['cpf_cnpj'],
@@ -229,6 +231,16 @@ require PAGES_DIR . '/_head.php';
                     | <strong>Alíquota:</strong> <?= h($orcamento['aliquota']) ?>%
                     <?php endif; ?>
                 </p>
+                <?php if (!empty($orcamento['codigo_municipio_prestacao']) || !empty($orcamento['municipio_incidencia'])) : ?>
+                <p class="mb-1">
+                    <?php if (!empty($orcamento['codigo_municipio_prestacao'])) : ?>
+                    <strong>Município de Prestação:</strong> <?= h($orcamento['codigo_municipio_prestacao']) ?>
+                    <?php endif; ?>
+                    <?php if (!empty($orcamento['municipio_incidencia'])) : ?>
+                    | <strong>Município de Incidência ISS:</strong> <?= h($orcamento['municipio_incidencia']) ?>
+                    <?php endif; ?>
+                </p>
+                <?php endif; ?>
                 <p class="mb-0 small text-muted">
                     <?= nl2br(h($orcamento['discriminacao'])) ?>
                 </p>

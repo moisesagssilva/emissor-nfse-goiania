@@ -43,6 +43,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'valor_csll'                  => trim($_POST['valor_csll'] ?? ''),
             'desconto_incondicionado'     => trim($_POST['desconto_incondicionado'] ?? ''),
             'desconto_condicionado'       => trim($_POST['desconto_condicionado'] ?? ''),
+            'codigo_municipio_prestacao'  => trim($_POST['codigo_municipio_prestacao'] ?? ''),
+            'municipio_incidencia'        => trim($_POST['municipio_incidencia'] ?? ''),
             'criado_por'                  => $usuario['id'] ?? 0,
         ];
 
@@ -196,6 +198,20 @@ $exigDescricoes = [
                    (string) ($v['codigo_tributacao_municipio']
                        ?? $tpl['codigo_tributacao_municipio'] ?? '')
                ) ?>">
+    </div>
+    <div class="col-md-3">
+        <label class="form-label">Município de Prestação</label>
+        <input type="text" name="codigo_municipio_prestacao" class="form-control"
+               value="<?= h((string) ($v['codigo_municipio_prestacao'] ?? '')) ?>"
+               placeholder="5208707 (padrão: Goiânia)">
+        <small class="form-text text-muted">Código IBGE do município onde o serviço foi executado.</small>
+    </div>
+    <div class="col-md-3">
+        <label class="form-label">Município de Incidência do ISS</label>
+        <input type="text" name="municipio_incidencia" class="form-control"
+               value="<?= h((string) ($v['municipio_incidencia'] ?? '')) ?>"
+               placeholder="5208707 (padrão: Goiânia)">
+        <small class="form-text text-muted">Código IBGE do município para o qual o ISS é devido.</small>
     </div>
     <div class="col-md-2">
         <label class="form-label">Alíquota (%)</label>
