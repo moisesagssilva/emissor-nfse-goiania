@@ -95,6 +95,26 @@ $camposOpc = [
 ];
 $issRet = (int) ($v['iss_retido'] ?? $tpl['iss_retido'] ?? 2);
 $exig   = (int) ($v['exigibilidade_iss'] ?? $tpl['exigibilidade_iss'] ?? 1);
+
+$exigOpcoes = [
+    1 => '1 — Exigível',
+    2 => '2 — Não incidência',
+    3 => '3 — Isenção',
+    4 => '4 — Exportação',
+    5 => '5 — Imunidade',
+    6 => '6 — Exig. suspensa (decisão judicial)',
+    7 => '7 — Exig. suspensa (proc. administrativo)',
+];
+
+$exigDescricoes = [
+    1 => 'ISS devido normalmente — opção padrão para a maioria dos serviços.',
+    2 => 'O serviço não está sujeito ao ISS.',
+    3 => 'Serviço isento de ISS por lei municipal.',
+    4 => 'Serviço exportado, imune ao ISS.',
+    5 => 'Imunidade tributária (ex: constitucional).',
+    6 => 'Exigibilidade suspensa por decisão judicial (liminar ou sentença).',
+    7 => 'Exigibilidade suspensa por processo administrativo.',
+];
 ?>
 <div class="d-flex justify-content-between mb-3">
     <h2><?= h($pageTitle) ?></h2>
@@ -191,11 +211,17 @@ $exig   = (int) ($v['exigibilidade_iss'] ?? $tpl['exigibilidade_iss'] ?? 1);
     </div>
     <div class="col-md-2">
         <label class="form-label">Exigibilidade ISS</label>
-        <select name="exigibilidade_iss" class="form-select">
-            <?php foreach (range(1, 7) as $n) : ?>
-            <option value="<?= $n ?>" <?= $exig === $n ? 'selected' : '' ?>><?= $n ?></option>
+        <select name="exigibilidade_iss" class="form-select" onchange="
+            document.getElementById('exigibilidade-hint').textContent = this.selectedOptions[0].dataset.hint;
+        ">
+            <?php foreach ($exigOpcoes as $val => $label) : ?>
+            <option value="<?= $val ?>" data-hint="<?= h($exigDescricoes[$val]) ?>"
+                <?= $exig === $val ? 'selected' : '' ?>>
+                <?= h($label) ?>
+            </option>
             <?php endforeach; ?>
         </select>
+        <small id="exigibilidade-hint" class="form-text text-muted"><?= h($exigDescricoes[$exig] ?? '') ?></small>
     </div>
     <div class="col-12">
         <label class="form-label">Discriminação *</label>
