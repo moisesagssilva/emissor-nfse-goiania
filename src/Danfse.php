@@ -163,8 +163,13 @@ final class Danfse
         }
 
         ob_start();
-        require __DIR__ . '/templates/danfse.php';
-        return (string) ob_get_clean();
+        try {
+            require __DIR__ . '/templates/danfse.php';
+            return (string) ob_get_clean();
+        } catch (\Throwable $e) {
+            ob_end_clean();
+            throw $e;
+        }
     }
 
     // ------------------------------------------------------------------ utils
@@ -263,6 +268,6 @@ final class Danfse
             return '';
         }
         $nome = Municipios::nome(self::txt($endereco, 'CodigoMunicipio'));
-        return $nome . '/ ' . self::txt($endereco, 'Uf');
+        return $nome !== '' ? $nome . '/ ' . self::txt($endereco, 'Uf') : '';
     }
 }

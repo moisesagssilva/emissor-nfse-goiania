@@ -43,7 +43,7 @@ if (($_GET['acao'] ?? '') === 'danfse' && $orcamento['status'] === 'emitido') {
             $dompdf->render();
 
             header('Content-Type: application/pdf');
-            header('Content-Disposition: inline; filename="nfse-' . $dados['numero'] . '.pdf"');
+            header('Content-Disposition: inline; filename="nfse-' . preg_replace('/\D/', '', $dados['numero']) . '.pdf"');
             echo $dompdf->output();
             exit;
         } catch (\Throwable $e) {
