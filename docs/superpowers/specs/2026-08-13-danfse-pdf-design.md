@@ -120,7 +120,7 @@ Ponto central da spec — a maior parte é mapeamento direto, mas há três regr
 | Dados do Tomador (todos os campos) | `.../TomadorServico/*` |
 | Dados do Intermediário | `.../Intermediario/*` (nunca enviado por `XmlFactory` hoje — bloco fica vazio) |
 | Descrição dos Serviços | `Servico/Discriminacao` |
-| Atividade do Município (célula longa) | `CodigoTributacaoMunicipio` + `" - "` + `DescricaoCodigoTributacaoMunicípio` (ambos em `InfNfse`, calculados pela própria SGISS — nosso `XmlFactory` nem sempre envia `CodigoTributacaoMunicipio`, a prefeitura preenche sozinha) |
+| Atividade do Município (célula longa) | `CodigoTributacaoMunicipio` + `" - "` + `DescricaoCodigoTributacaoMunicípio` — **correção**: só `DescricaoCodigoTributacaoMunicípio` fica direto em `InfNfse`; `CodigoTributacaoMunicipio` não existe nesse nível na resposta real, só dentro de `Servico` (a busca por `getElementsByTagName` a partir de `InfNfse` o encontra do mesmo jeito, por recursão nos descendentes — não precisa navegar até `Servico` explicitamente). Calculados pela própria SGISS — nosso `XmlFactory` nem sempre envia `CodigoTributacaoMunicipio`; quando ausente dos dois lugares, o campo degrada para só a descrição. |
 | Item da LC116/2003 | `Servico/ItemListaServico` |
 | Cód. CNAE / Cód. NBS | `Servico/CodigoCnae` / `Servico/CodigoNbs` (NBS fica em branco — não implementado em `XmlFactory`) |
 | Vl. Total dos Serviços, Desconto Incondicionado, Deduções | `Servico/Valores/ValorServicos`, `DescontoIncondicionado`, `ValorDeducoes` |
