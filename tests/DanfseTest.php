@@ -120,4 +120,38 @@ final class DanfseTest extends TestCase
         $this->expectException(\InvalidArgumentException::class);
         Danfse::extrair('<foo></foo>');
     }
+
+    public function testRenderizarProduzHtmlComOsDadosDaNota(): void
+    {
+        $d = Danfse::extrair($this->xmlComRetencao);
+        $html = Danfse::renderizar($d);
+
+        $this->assertStringContainsString('Empresa Exemplo Ltda', $html);
+        $this->assertStringContainsString('Cliente Exemplo LTDA', $html);
+        $this->assertStringContainsString('R$ 37.209,00', $html);
+        $this->assertStringContainsString('R$ 36.464,82', $html);
+        $this->assertStringContainsString('ABC123XYZ', $html);
+        $this->assertStringContainsString('Belo Horizonte - Minas Gerais', $html);
+        // QR code e chave ADN nunca devem aparecer — decisão do spec §1.
+        $this->assertStringNotContainsString('qrcode', strtolower($html));
+        $this->assertStringNotContainsString('Ambiente de Dados Nacional', $html);
+    }
+
+    public function testRenderizarEscapaHtmlNosDados(): void
+    {
+        // XML entities, não a tag crua: uma tag crua vira elemento filho válido do
+        // XML (o DOMDocument descarta as tags do textContent), o que mascararia o
+        // teste. Entidades preservam "<script>" como texto literal após o parse,
+        // exercitando de fato o escaping do template.
+        $xmlComTagNoNome = str_replace(
+            'Cliente Exemplo LTDA',
+            'Cliente &lt;script&gt;alert(1)&lt;/script&gt;',
+            $this->xmlComRetencao
+        );
+        $d = Danfse::extrair($xmlComTagNoNome);
+        $html = Danfse::renderizar($d);
+
+        $this->assertStringNotContainsString('<script>', $html);
+        $this->assertStringContainsString('&lt;script&gt;', $html);
+    }
 }
