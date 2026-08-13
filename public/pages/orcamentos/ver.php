@@ -3,10 +3,8 @@
 declare(strict_types=1);
 
 use EmissorGyn\Config;
-use EmissorGyn\NfseClient;
-use EmissorGyn\ResponseParser;
+use EmissorGyn\Danfse;
 use EmissorGyn\Storage;
-use EmissorGyn\XmlFactory;
 
 $id        = isset($_GET['id']) ? (int) $_GET['id'] : 0;
 $orcamento = $id > 0 ? $cadastro->buscarOrcamento($id) : null;
@@ -22,24 +20,34 @@ if (($_GET['clonado'] ?? '') === '1') {
 }
 $usuario = $auth->usuarioAtual();
 
-// ── DANFS-e via redirect GET (não altera estado) ──────────────────────────────
+// ── DANFS-e em PDF, gerada localmente (não altera estado) ─────────────────────
 if (($_GET['acao'] ?? '') === 'danfse' && $orcamento['status'] === 'emitido') {
-    $nfse = (string) ($orcamento['nfse_numero'] ?? '');
-    if ($nfse !== '') {
+    $cfg     = new Config(dirname(__DIR__, 3));
+    $storage = new Storage($cfg->path('DB_PATH', 'storage/nfse.sqlite'));
+    $emissao = !empty($orcamento['emissao_id'])
+        ? $storage->buscarEmissao((int) $orcamento['emissao_id'])
+        : null;
+
+    if ($emissao !== null && !empty($emissao['xml_retorno'])) {
         try {
-            $cfg     = new Config(dirname(__DIR__, 3));
-            $factory = new XmlFactory($cfg);
-            $client  = new NfseClient($cfg, $factory);
-            $xmlRet  = $client->consultarUrlNfse($nfse);
-            $url     = ResponseParser::parseUrlNfse($xmlRet);
-            if ($url !== null) {
-                header('Location: ' . $url);
-                exit;
-            }
-            $flash = ['tipo' => 'warning', 'msg' => 'URL do DANFS-e não encontrada no retorno do SGISS.'];
+            $dados    = Danfse::extrair((string) $emissao['xml_retorno']);
+            $logoPath = $cfg->path('LOGO_PATH', '');
+            $html     = Danfse::renderizar($dados, is_file($logoPath) ? $logoPath : '');
+
+            $dompdf = new Dompdf\Dompdf(['isRemoteEnabled' => false]);
+            $dompdf->loadHtml($html, 'UTF-8');
+            $dompdf->setPaper('A4', 'portrait');
+            $dompdf->render();
+
+            header('Content-Type: application/pdf');
+            header('Content-Disposition: inline; filename="nfse-' . $dados['numero'] . '.pdf"');
+            echo $dompdf->output();
+            exit;
         } catch (\Throwable $e) {
-            $flash = ['tipo' => 'danger', 'msg' => 'Erro ao obter DANFS-e: ' . $e->getMessage()];
+            $flash = ['tipo' => 'danger', 'msg' => 'Erro ao gerar DANFS-e: ' . $e->getMessage()];
         }
+    } else {
+        $flash = ['tipo' => 'warning', 'msg' => 'XML de retorno da NFS-e não encontrado para este orçamento.'];
     }
 }
 
@@ -253,8 +261,8 @@ require PAGES_DIR . '/_head.php';
 <div class="alert alert-success mt-4">
     <strong>NFS-e emitida:</strong> <?= h($orcamento['nfse_numero']) ?>
     <a href="?p=orcamentos/ver&amp;id=<?= $id ?>&amp;acao=danfse"
-       class="btn btn-sm btn-success ms-3">
-        Abrir DANFS-e Oficial
+       class="btn btn-sm btn-success ms-3" target="_blank">
+        Baixar DANFS-e (PDF)
     </a>
 </div>
 <?php endif; ?>
