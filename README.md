@@ -79,8 +79,7 @@ ngrok http 8080
 - **Dashboard** — visão geral: estatísticas de NFS-e e NF-e por status
 - **Clientes** — cadastro de pessoas físicas e jurídicas
 - **Serviços** — templates de serviço para emissão rápida de NFS-e
-- **Orçamentos** — geração e emissão de NFS-e
-  - DANFS-e PDF gerado localmente sob demanda (inline no navegador), com logo da empresa opcional (`LOGO_PATH`)
+- **Orçamentos** — geração e emissão de NFS-e; DANFS-e em PDF gerado localmente sob demanda a partir do XML de retorno da SGISS (não depende de nenhum endpoint remoto da prefeitura)
 - **Pedidos NF-e** — ciclo completo de NF-e de produto:
   - Criação com tabela dinâmica de itens (NCM, CFOP, CSOSN, PIS/COFINS por item)
   - Workflow: rascunho → aprovado → emitido → cancelado
