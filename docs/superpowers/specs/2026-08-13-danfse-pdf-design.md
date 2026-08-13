@@ -59,10 +59,15 @@ Template HTML/CSS puro, sem lógica de negócio — usa `h()` (já global, defin
 ```php
 final class Municipios
 {
-    /** "Belo Horizonte - Minas Gerais" ou o código cru se não encontrado. */
-    public static function nomeUf(string $codigoIbge): string { ... }
+    /** "Goiânia" — só o nome, ou o código cru se não encontrado. */
+    public static function nome(string $codigoIbge): string { ... }
+
+    /** "Belo Horizonte - Minas Gerais" — nome + estado por extenso, ou o código cru se não encontrado. */
+    public static function cidadeEstado(string $codigoIbge): string { ... }
 }
 ```
+
+Dois métodos, não um: o modelo de referência usa dois formatos diferentes para município — "Cidade/UF" (sigla de 2 letras, ex. "Goiânia/ GO") nos endereços de prestador/tomador, e "Cidade - Estado por extenso" (ex. "Belo Horizonte - Minas Gerais") em "Local dos Serviços"/"Município Incidência". A sigla de 2 letras já vem direto no XML (`<Uf>GO</Uf>` dentro do próprio bloco de endereço) — só falta o nome da cidade (`nome()`). Para "Local dos Serviços"/"Município Incidência" não há UF nenhuma no XML, só o código do município — daí precisar do nome por extenso também (`cidadeEstado()`).
 
 Carrega `data/municipios_ibge.json` uma vez (variável estática), lookup O(1) por código. Fallback: se o código não existir na tabela, devolve o próprio código (não lança exceção — é campo de exibição, não deve derrubar a geração do PDF por um código não catalogado).
 
@@ -72,12 +77,12 @@ Tabela oficial do IBGE, todos os ~5.570 municípios brasileiros:
 
 ```json
 {
-  "5208707": {"nome": "Goiânia", "uf": "GO"},
-  "3106200": {"nome": "Belo Horizonte", "uf": "MG"}
+  "5208707": {"nome": "Goiânia", "uf": "GO", "uf_nome": "Goiás"},
+  "3106200": {"nome": "Belo Horizonte", "uf": "MG", "uf_nome": "Minas Gerais"}
 }
 ```
 
-Fonte: API pública do IBGE (`servicodados.ibge.gov.br/api/v1/localidades/municipios`) — domínio público, dado de referência oficial do governo federal. Gerada uma vez durante a implementação (script auxiliar descartável, não faz parte do runtime da aplicação).
+Fonte: dataset público `kelvins/municipios-brasileiros` no GitHub (`json/municipios.json` + `json/estados.json`, MIT, dado de referência do IBGE) — usado em vez da API oficial do IBGE porque o ambiente de implementação só tem acesso confiável à API do GitHub (`gh api`), não a hosts arbitrários. Os dois arquivos são baixados e unidos num único mapa `código → {nome, uf, uf_nome}` uma vez durante a implementação (script auxiliar descartável, não faz parte do runtime da aplicação).
 
 ### 3.5 `src/Storage.php` — novo método
 
@@ -110,8 +115,8 @@ Ponto central da spec — a maior parte é mapeamento direto, mas há três regr
 | **CNPJ / Inscrição Municipal do prestador** | `DeclaracaoPrestacaoServico/InfDeclaracaoPrestacaoServico/Prestador/*` — **não** está em `PrestadorServico` (esse bloco não carrega `CpfCnpj`/`InscricaoMunicipal` na resposta real, apesar do nome sugerir isso) |
 | Natureza da Operação | derivado de `Servico/ExigibilidadeISS` (1=Exigível...7=Exig. suspensa — mesma tabela de `orcamentos/form.php`'s `$exigOpcoes`) |
 | Número/Série do RPS, Data de Emissão do RPS | `.../Rps/IdentificacaoRps/*`, `.../Rps/DataEmissao` |
-| Local dos Serviços | `Municipios::nomeUf(Servico/CodigoMunicipio)` |
-| Município Incidência | `Municipios::nomeUf(Servico/MunicipioIncidencia)` |
+| Local dos Serviços | `Municipios::cidadeEstado(Servico/CodigoMunicipio)` |
+| Município Incidência | `Municipios::cidadeEstado(Servico/MunicipioIncidencia)` |
 | Dados do Tomador (todos os campos) | `.../TomadorServico/*` |
 | Dados do Intermediário | `.../Intermediario/*` (nunca enviado por `XmlFactory` hoje — bloco fica vazio) |
 | Descrição dos Serviços | `Servico/Discriminacao` |
@@ -191,7 +196,7 @@ Se cair no `else`/`catch`, o fluxo segue normalmente para o resto da página (me
 
 - Orçamento não `emitido`, sem `emissao_id`, ou `emissoes.xml_retorno` vazio/nulo → aviso (`flash warning`), sem tentar gerar.
 - `Danfse::extrair()` lança `\InvalidArgumentException` se o XML não tiver `<InfNfse>` → capturado, `flash danger` com a mensagem.
-- Código de município fora da tabela do IBGE → `Municipios::nomeUf()` devolve o código cru (não lança, não quebra a geração).
+- Código de município fora da tabela do IBGE → `Municipios::nome()`/`Municipios::cidadeEstado()` devolvem o código cru (não lança, não quebra a geração).
 - Falha do Dompdf ao renderizar (ex.: HTML malformado por bug futuro no template) → propaga como `\Throwable` genérico, capturado pelo mesmo `catch` acima.
 
 ---
@@ -202,6 +207,6 @@ Se cair no `else`/`catch`, o fluxo segue normalmente para o resto da página (me
 1. `Danfse::extrair()` contra o `xml_retorno` real já salvo em `storage/xml/20260812-191307-rps1-retorno.xml` (fixture copiada para `tests/fixtures/`) — assert nos campos mapeados da tabela do §4, incluindo as três regras derivadas (retenção, total-ISSQN-vs-retido, natureza da operação).
 2. `Danfse::extrair()` com IssRetido=2 (nota fictícia sem retenção) — assert que a regra derivada 2 inverte corretamente.
 3. `Danfse::extrair()` com XML sem `<InfNfse>` → assert `\InvalidArgumentException`.
-4. `Municipios::nomeUf()` com código conhecido (Goiânia, Belo Horizonte) e código inexistente (fallback pro código cru).
+4. `Municipios::nome()` e `Municipios::cidadeEstado()` com código conhecido (Goiânia, Belo Horizonte) e código inexistente (fallback pro código cru).
 
 Sem asserção sobre bytes de PDF (não é signal útil) — a verificação de layout é manual: gerar o PDF da nota real (RPS 1) e comparar visualmente com o modelo de referência.
