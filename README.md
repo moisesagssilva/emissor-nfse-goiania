@@ -113,7 +113,7 @@ PRESTADOR_MUNICIPIO=Goiânia
 PRESTADOR_UF=GO
 PRESTADOR_CEP=74000000
 
-# Logo da empresa no DANFE (opcional; PNG ou JPG). Deixe vazio para gerar sem logo.
+# Logo da empresa no DANFE (NF-e) e no DANFS-e (NFS-e) (opcional; PNG ou JPG). Deixe vazio para gerar sem logo.
 LOGO_PATH=
 ```
 
@@ -152,7 +152,7 @@ bin/nfse emitir --arquivo examples/nota.json
 bin/nfse consultar-rps --numero 15
 bin/nfse notas --inicio 2026-07-01 --fim 2026-07-31
 bin/nfse listar
-bin/nfse url --nfse 123
+bin/nfse url --nfse 123    # ⚠️ conhecido por retornar erro (E160) no ambiente atual — use a geração de PDF local pela interface web em vez disso
 bin/nfse cancelar --nfse 123 --codigo 1   # 1=erro, 2=não prestado, 4=duplicidade
 ```
 
@@ -177,7 +177,7 @@ Todos os endpoints exigem `Authorization: Bearer <API_TOKEN>` (defina no `.env`)
 | GET | `/rps/{n}` | Consulta NFS-e pelo número do RPS |
 | GET | `/notas?inicio=&fim=` | Lista notas por período |
 | POST | `/cancelar` | Cancela NFS-e |
-| GET | `/url/{nfse}` | URL do DANFSe |
+| GET | `/url/{nfse}` | URL do DANFSe — ⚠️ conhecido por retornar erro no ambiente atual — use a geração de PDF local pela interface web em vez disso |
 | GET | `/historico` | Histórico local |
 
 ```bash
