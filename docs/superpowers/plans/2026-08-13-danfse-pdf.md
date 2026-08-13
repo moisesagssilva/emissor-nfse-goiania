@@ -388,23 +388,22 @@ Create `tests/fixtures/nfse-retorno.xml` (structure matches a real `GerarNfseRes
             <BaseCalculo>37209.00</BaseCalculo>
             <ValorLiquidoNfse>36464.82</ValorLiquidoNfse>
           </ValoresNfse>
-          <CodigoTributacaoMunicipio>702</CodigoTributacaoMunicipio>
           <DescricaoCodigoTributacaoMunicípio>07.02 - Execucao, por administracao, empreitada ou subempreitada, de obras de construcao civil.</DescricaoCodigoTributacaoMunicípio>
           <ValorCredito>0</ValorCredito>
           <PrestadorServico>
             <RazaoSocial>Empresa Exemplo Ltda</RazaoSocial>
             <NomeFantasia>Exemplo Solar</NomeFantasia>
             <Endereco>
-              <Endereco>Avenida Portugal</Endereco>
-              <Numero>1148</Numero>
-              <Complemento>Sala C2501</Complemento>
-              <Bairro>Setor Marista</Bairro>
+              <Endereco>Rua das Amostras</Endereco>
+              <Numero>500</Numero>
+              <Complemento>Sala 10</Complemento>
+              <Bairro>Centro</Bairro>
               <CodigoMunicipio>5208707</CodigoMunicipio>
               <Uf>GO</Uf>
-              <Cep>74150030</Cep>
+              <Cep>74000000</Cep>
             </Endereco>
             <Contato>
-              <Telefone>62981274500</Telefone>
+              <Telefone>62999990000</Telefone>
               <Email>contato@exemplosolar.com.br</Email>
             </Contato>
           </PrestadorServico>
@@ -449,20 +448,20 @@ Create `tests/fixtures/nfse-retorno.xml` (structure matches a real `GerarNfseRes
               <TomadorServico>
                 <IdentificacaoTomador>
                   <CpfCnpj>
-                    <Cnpj>17452871000149</Cnpj>
+                    <Cnpj>22333444000155</Cnpj>
                   </CpfCnpj>
                 </IdentificacaoTomador>
                 <RazaoSocial>Cliente Exemplo LTDA</RazaoSocial>
                 <Endereco>
                   <Endereco>R Exemplo</Endereco>
                   <Numero>138</Numero>
-                  <Bairro>Vila Paris</Bairro>
+                  <Bairro>Bairro Exemplo</Bairro>
                   <CodigoMunicipio>3106200</CodigoMunicipio>
                   <Uf>MG</Uf>
-                  <Cep>30380780</Cep>
+                  <Cep>30190000</Cep>
                 </Endereco>
                 <Contato>
-                  <Telefone>31996135712</Telefone>
+                  <Telefone>31988887777</Telefone>
                   <Email>cliente@exemplo.com.br</Email>
                 </Contato>
               </TomadorServico>
@@ -524,10 +523,10 @@ final class DanfseTest extends TestCase
         $this->assertSame('Exemplo Solar', $d['prestador']['nome_fantasia']);
         $this->assertSame('11.222.333/0001-81', $d['prestador']['cnpj']);
         $this->assertSame('123456', $d['prestador']['inscricao_municipal']);
-        $this->assertSame('Avenida Portugal,1148 Sala C2501 - Setor Marista', $d['prestador']['endereco']);
-        $this->assertSame('74150-030', $d['prestador']['cep']);
+        $this->assertSame('Rua das Amostras,500 Sala 10 - Centro', $d['prestador']['endereco']);
+        $this->assertSame('74000-000', $d['prestador']['cep']);
         $this->assertSame('Goiânia/ GO', $d['prestador']['municipio_uf']);
-        $this->assertSame('(62)98127-4500', $d['prestador']['telefone']);
+        $this->assertSame('(62)99999-0000', $d['prestador']['telefone']);
         $this->assertSame('contato@exemplosolar.com.br', $d['prestador']['email']);
     }
 
@@ -535,15 +534,15 @@ final class DanfseTest extends TestCase
     {
         $d = Danfse::extrair($this->xmlComRetencao);
 
-        $this->assertSame('17.452.871/0001-49', $d['tomador']['cnpj_cpf']);
+        $this->assertSame('22.333.444/0001-55', $d['tomador']['cnpj_cpf']);
         $this->assertSame('Cliente Exemplo LTDA', $d['tomador']['razao_social']);
         $this->assertSame('R Exemplo', $d['tomador']['endereco']);
         $this->assertSame('138', $d['tomador']['numero']);
         $this->assertSame('', $d['tomador']['complemento']);
-        $this->assertSame('Vila Paris', $d['tomador']['bairro']);
+        $this->assertSame('Bairro Exemplo', $d['tomador']['bairro']);
         $this->assertSame('Belo Horizonte/ MG', $d['tomador']['cidade_uf']);
-        $this->assertSame('30380-780', $d['tomador']['cep']);
-        $this->assertSame('(31)99613-5712', $d['tomador']['telefone']);
+        $this->assertSame('30190-000', $d['tomador']['cep']);
+        $this->assertSame('(31)98888-7777', $d['tomador']['telefone']);
         $this->assertSame('cliente@exemplo.com.br', $d['tomador']['email']);
     }
 

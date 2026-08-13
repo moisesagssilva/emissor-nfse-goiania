@@ -12,23 +12,22 @@
             <BaseCalculo>37209.00</BaseCalculo>
             <ValorLiquidoNfse>36464.82</ValorLiquidoNfse>
           </ValoresNfse>
-          <CodigoTributacaoMunicipio>702</CodigoTributacaoMunicipio>
           <DescricaoCodigoTributacaoMunicípio>07.02 - Execucao, por administracao, empreitada ou subempreitada, de obras de construcao civil.</DescricaoCodigoTributacaoMunicípio>
           <ValorCredito>0</ValorCredito>
           <PrestadorServico>
             <RazaoSocial>Empresa Exemplo Ltda</RazaoSocial>
             <NomeFantasia>Exemplo Solar</NomeFantasia>
             <Endereco>
-              <Endereco>Avenida Portugal</Endereco>
-              <Numero>1148</Numero>
-              <Complemento>Sala C2501</Complemento>
-              <Bairro>Setor Marista</Bairro>
+              <Endereco>Rua das Amostras</Endereco>
+              <Numero>500</Numero>
+              <Complemento>Sala 10</Complemento>
+              <Bairro>Centro</Bairro>
               <CodigoMunicipio>5208707</CodigoMunicipio>
               <Uf>GO</Uf>
-              <Cep>74150030</Cep>
+              <Cep>74000000</Cep>
             </Endereco>
             <Contato>
-              <Telefone>62981274500</Telefone>
+              <Telefone>62999990000</Telefone>
               <Email>contato@exemplosolar.com.br</Email>
             </Contato>
           </PrestadorServico>
@@ -73,20 +72,20 @@
               <TomadorServico>
                 <IdentificacaoTomador>
                   <CpfCnpj>
-                    <Cnpj>17452871000149</Cnpj>
+                    <Cnpj>22333444000155</Cnpj>
                   </CpfCnpj>
                 </IdentificacaoTomador>
                 <RazaoSocial>Cliente Exemplo LTDA</RazaoSocial>
                 <Endereco>
                   <Endereco>R Exemplo</Endereco>
                   <Numero>138</Numero>
-                  <Bairro>Vila Paris</Bairro>
+                  <Bairro>Bairro Exemplo</Bairro>
                   <CodigoMunicipio>3106200</CodigoMunicipio>
                   <Uf>MG</Uf>
-                  <Cep>30380780</Cep>
+                  <Cep>30190000</Cep>
                 </Endereco>
                 <Contato>
-                  <Telefone>31996135712</Telefone>
+                  <Telefone>31988887777</Telefone>
                   <Email>cliente@exemplo.com.br</Email>
                 </Contato>
               </TomadorServico>
