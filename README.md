@@ -80,6 +80,7 @@ ngrok http 8080
 - **Clientes** — cadastro de pessoas físicas e jurídicas
 - **Serviços** — templates de serviço para emissão rápida de NFS-e
 - **Orçamentos** — geração e emissão de NFS-e
+  - DANFS-e PDF gerado localmente sob demanda (inline no navegador), com logo da empresa opcional (`LOGO_PATH`)
 - **Pedidos NF-e** — ciclo completo de NF-e de produto:
   - Criação com tabela dinâmica de itens (NCM, CFOP, CSOSN, PIS/COFINS por item)
   - Workflow: rascunho → aprovado → emitido → cancelado
