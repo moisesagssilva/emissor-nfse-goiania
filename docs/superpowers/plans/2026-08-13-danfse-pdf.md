@@ -340,7 +340,7 @@ In `src/Storage.php`, add this method right after `registrarErro()` (currently e
 - [ ] **Step 4: Run test to verify it passes**
 
 Run: `vendor/bin/phpunit tests/StorageTest.php`
-Expected: PASS (2 tests, 5 assertions)
+Expected: PASS (2 tests, 4 assertions)
 
 - [ ] **Step 5: Run the full suite**
 
