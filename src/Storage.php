@@ -122,6 +122,15 @@ final class Storage
         )->execute([$erro, $xmlRetorno, $id]);
     }
 
+    /** @return array<string,mixed>|null */
+    public function buscarEmissao(int $id): ?array
+    {
+        $stmt = $this->pdo->prepare('SELECT * FROM emissoes WHERE id = ?');
+        $stmt->execute([$id]);
+        $row = $stmt->fetch(\PDO::FETCH_ASSOC);
+        return $row !== false ? $row : null;
+    }
+
     /** @return array<int,array<string,mixed>> */
     public function listar(int $limite = 20): array
     {
