@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 use EmissorGyn\Config;
 use EmissorGyn\Danfse;
+use EmissorGyn\NfseClient;
+use EmissorGyn\ResponseParser;
 use EmissorGyn\Storage;
+use EmissorGyn\XmlFactory;
 
 $id        = isset($_GET['id']) ? (int) $_GET['id'] : 0;
 $orcamento = $id > 0 ? $cadastro->buscarOrcamento($id) : null;
