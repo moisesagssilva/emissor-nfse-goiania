@@ -939,9 +939,13 @@ Add to `tests/DanfseTest.php` (inside the existing `DanfseTest` class):
 
     public function testRenderizarEscapaHtmlNosDados(): void
     {
+        // XML entities, não a tag crua: uma tag crua vira elemento filho válido do
+        // XML (o DOMDocument descarta as tags do textContent), o que mascararia o
+        // teste. Entidades preservam "<script>" como texto literal após o parse,
+        // exercitando de fato o escaping do template.
         $xmlComTagNoNome = str_replace(
             'Cliente Exemplo LTDA',
-            'Cliente <script>alert(1)</script>',
+            'Cliente &lt;script&gt;alert(1)&lt;/script&gt;',
             $this->xmlComRetencao
         );
         $d = Danfse::extrair($xmlComTagNoNome);
